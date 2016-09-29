@@ -1,59 +1,68 @@
-import {AcceptorMock, AcceptorClientMock, Bus} from "../../src/tests/AcceptorMocks"
+import {AcceptorMock, AcceptorClientMock, EonDb} from "../../src/tests/AcceptorMocks"
+import {Bus, TheLoop, ShufflingBus, MessageFileLogger, MessageFileChecker} from "../../src/tests/SimulationCore"
 
 import buildProposer from  "../../src/tests/buildProposer"
-import {NetworkReceiver, listenBusAsync} from  "../../src/tests/NetworkReceiver"
-import {NetworkLogger} from  "../../src/tests/NetworkLogger"
-import {NetworkChecker} from  "../../src/tests/NetworkChecker"
-import Shuffler from  "../../src/tests/Shuffler"
 import unwrapOk from  "../../src/tests/unwrapOk"
 import ReadIncWriteConsistencyChecker from "../../src/tests/ReadIncWriteConsistencyChecker"
 import {initChange, idChange, updateChange, idQuery} from  "../../src/tests/mutators"
 
 class ShuffleTest {
-    init() {
-        this.bus = new Bus();
-        this.receiver = new NetworkReceiver();
+    init(seed) {
+        this.loop = new TheLoop();
+        
+        let bus = new Bus(this.loop);
+        bus = new ShufflingBus(bus, this.loop.timer, seed);
+        
+        this.bus = bus;
 
-        this.receiver.registerAcceptor("id1", new AcceptorMock());
-        this.receiver.registerAcceptor("id2", new AcceptorMock());
-        this.receiver.registerAcceptor("id3", new AcceptorMock());
+        this.loop.addAgent(this);
+        this.loop.addAgent(new AcceptorMock("a1s", this.bus));
+        this.loop.addAgent(new AcceptorMock("a2s", this.bus));
+        this.loop.addAgent(new AcceptorMock("a3s", this.bus));
 
         const quorum = {
             "read": 2,
             "write": 2
         };
 
-        this.proposer = buildProposer(1, this.bus, 1, [
-            new AcceptorClientMock("id1", false, this.bus),
-            new AcceptorClientMock("id2", false, this.bus),
-            new AcceptorClientMock("id3", false, this.bus)
-        ], quorum);
+        const eonDb = new EonDb("eondb1", this.bus, 1);
+
+        this.loop.addAgent(eonDb);
+
+        const acs = [
+            new AcceptorClientMock("a1c", this.bus, "a1s", false),
+            new AcceptorClientMock("a2c", this.bus, "a2s", false),
+            new AcceptorClientMock("a3c", this.bus, "a3s", false)
+        ];
+
+        acs.forEach(ac => this.loop.addAgent(ac));
+
+        this.proposer = buildProposer(1, eonDb, acs, quorum);
 
         this.key = "foo1";
     }
 
-    addShufflerTransformer(seed) {
-        this.receiver = new Shuffler(this.receiver, seed, 3);
+    setLogger(logger) {
+        this.loop.setLogger(logger);
     }
 
-    addNetworkLogger(name) {
-        this.receiver = new NetworkLogger(this.receiver, name);
+    tick() {
+        if (!this.stopTicking) {
+            this.runClient();
+            this.stopTicking = true;
+            return true;
+        }
+        return false;
     }
 
-    addNetworkChecker(name) {
-        this.receiver = new NetworkChecker(this.receiver, name);
-    }
-
-    turnOnAcceptors() {
-        listenBusAsync(this.bus, this.receiver);
+    run() {
+        this.loop.run();
     }
 
     async runClient() {
         try {
             const checker = new ReadIncWriteConsistencyChecker();
 
-            this.receiver.on();
-            
             const init = unwrapOk(await this.proposer.changeQuery(this.key, initChange(0), idQuery));
             checker.inited(this.key, init.version, init.value);
 
@@ -68,8 +77,6 @@ class ShuffleTest {
                 checker.written(this.key, read.version, read.value + 1);
             }
 
-            this.receiver.off();
-
             console.info("DONE");
         } catch(e) {
             console.info("ERROR");
@@ -79,20 +86,16 @@ class ShuffleTest {
 }
 
 
-export function record(seed, name) {
+export function record(seed, path) {
     const test =  new ShuffleTest();
-    test.init();
-    test.addNetworkLogger(name);
-    test.addShufflerTransformer(seed);
-    test.turnOnAcceptors();
-    test.runClient();
+    test.init(seed);
+    test.setLogger(new MessageFileLogger(path));
+    test.run();
 }
 
-export function replay(seed, name) {
+export function replay(seed, path) {
     const test =  new ShuffleTest();
-    test.init();
-    test.addNetworkChecker(name);
-    test.addShufflerTransformer(seed);
-    test.turnOnAcceptors();
-    test.runClient();
+    test.init(seed);
+    test.setLogger(new MessageFileChecker(path));
+    test.run();
 }

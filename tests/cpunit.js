@@ -1,6 +1,6 @@
 
 const CMDS = ["record", "replay"];
-const TESTS = ["network_shuffling"]
+const TESTS = ["network_shuffling", "network_loosing"]
 
 if (process.argv.length != 5) {
     console.info(process.argv);
@@ -35,6 +35,7 @@ function help() {
     console.info();
     console.info("  Supported tests:");
     console.info("   * network_shuffling");
+    console.info("   * network_loosing");
     console.info();
     console.info("  See tests folder for logs");
 }

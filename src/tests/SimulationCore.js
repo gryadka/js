@@ -1,5 +1,4 @@
 import fs from "fs";
-import seedrandom from "seedrandom"
 
 export class TheLoop {
     constructor() {
@@ -159,11 +158,30 @@ export class Bus {
     }
 }
 
+export class LoosingBus {
+    constructor(bus, random, stability) {
+        this.bus = bus;
+        this.random = random;
+        this.stability = stability;
+    }
+    uuid() {
+        return this.bus.uuid(); 
+    }
+    send(message) {
+        if (this.random() <= this.stability) {
+            this.bus.send(message);
+        }
+    }
+    *inbox(id) {
+        yield* this.bus.inbox(id);
+    }
+}
+
 export class ShufflingBus {
-    constructor(bus, timer, seed) {
+    constructor(bus, timer, random) {
         this.bus = bus;
         this.timer = timer;
-        this.random = seedrandom(seed);
+        this.random = random;
     }
     uuid() {
         return this.bus.uuid(); 

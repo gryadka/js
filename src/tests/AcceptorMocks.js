@@ -134,12 +134,14 @@ export class EonDb {
 }
 
 export class AcceptorClientMock {
-    constructor(id, world, acceptor_id, shouldIgnore) {
+    constructor(id, world, acceptor_id, shouldIgnore, timer, timeout) {
         this.id = id;
         this.world = world;
         this.acceptor_id = acceptor_id;
         this.shouldIgnore = shouldIgnore;
         this.resolvers = new Map();
+        this.timer = timer;
+        this.timeout = timeout;
     }
 
     tick() {
@@ -148,9 +150,12 @@ export class AcceptorClientMock {
             hadProgress = true;
             // console.info(`acceptorClient(${this.id}): processing`);
             // console.info(message);
-            const resolve = this.resolvers.get(message.id);
-            this.resolvers.delete(message.id);
-            resolve(message);
+
+            if (this.resolvers.has(message.id)) {
+                const resolve = this.resolvers.get(message.id);
+                this.resolvers.delete(message.id);
+                resolve(message);
+            }
             // console.info(`acceptorClient(${this.id}): processed`);
         }
         return hadProgress;
@@ -174,8 +179,16 @@ export class AcceptorClientMock {
             // console.info(`acceptorClient(${this.id}): sending`);
             // console.info(outgoing);
             this.world.send(outgoing);
+            this.timer.postpone(this.timer.now() + this.timeout, () => {
+                if (this.resolvers.has(outgoing.id)) {
+                    this.resolvers.delete(outgoing.id);
+                    resolve({response: {isError: true}});
+                }
+            });
             // console.info(`acceptorClient(${this.id}): sent`);
         }));
+
+
 
         // console.info(`acceptorClient(${this.id}): prepared`);
 
@@ -199,6 +212,12 @@ export class AcceptorClientMock {
             // console.info(`acceptorClient(${this.id}): sending`);
             // console.info(outgoing);
             this.world.send(outgoing);
+            this.timer.postpone(this.timer.now() + this.timeout, () => {
+                if (this.resolvers.has(outgoing.id)) {
+                    this.resolvers.delete(outgoing.id);
+                    resolve({response: {isError: true}});
+                }
+            });
             // console.info(`acceptorClient(${this.id}): sent`);
         }));
 

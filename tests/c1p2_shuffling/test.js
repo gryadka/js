@@ -1,5 +1,6 @@
 import {AcceptorMock, AcceptorClientMock, EonDb} from "../../src/tests/AcceptorMocks"
 import {Bus, TheLoop, ShufflingBus, MessageFileLogger, MessageFileChecker} from "../../src/tests/SimulationCore"
+import {retryOnErrors, isLeadershipNoError, isLeadershipUnknownError} from "../../src/tests/SimulationCore"
 import seedrandom from "seedrandom"
 
 import buildProposer from  "../../src/tests/buildProposer"
@@ -65,7 +66,7 @@ class ShuffleTest {
 
             for(let i=0;i<loops;i++) {
 
-                await retryOnErrors(async () => {
+                await retryOnErrors(this.loop.timer, async () => {
                     proposer = oneOf(this.random, [this.proposer1, this.proposer2])
                     const read = unwrapOk(await proposer.changeQuery(this.key, idChange, idQuery));
                     checker.seen(this.key, read.version, read.value);
@@ -117,37 +118,3 @@ function oneOf(random, array) {
     return array[Math.floor(random() * array.length)];
 }
 
-async function retryOnErrors(action, errors) {
-    while (true) {
-        try {
-            return await action();
-        } catch(e) {
-            if (errors.some(isError => isError(e))) {
-                continue;
-            }
-            throw e;
-        }
-    }
-}
-
-function isLeadershipUnknownError(e) {
-    if (!e) return false;
-    if (e.status!="UNKNOWN") return false;
-    if (!e.details) return false;
-    if (e.details.length!=3) return false;
-    for (const id of ["ERRNO009","ERRNO007","ERRNO004"]) {
-        if (!e.details.some(x => x.id==id)) return false;
-    }
-    return true;
-}
-
-function isLeadershipNoError(e) {
-    if (!e) return false;
-    if (e.status!="NO") return false;
-    if (!e.details) return false;
-    if (e.details.length!=4) return false;
-    for (const id of ["ERRNO009","ERRNO007","ERRNO006","ERRNO003"]) {
-        if (!e.details.some(x => x.id==id)) return false;
-    }
-    return true;
-}

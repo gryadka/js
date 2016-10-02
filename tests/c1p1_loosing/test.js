@@ -1,5 +1,6 @@
 import {AcceptorMock, AcceptorClientMock, EonDb} from "../../src/tests/AcceptorMocks"
 import {Bus, TheLoop, ShufflingBus, LoosingBus, MessageFileLogger, MessageFileChecker} from "../../src/tests/SimulationCore"
+import {retryOnErrors, isProposeNoError, isAcceptUnknownError} from "../../src/tests/SimulationCore"
 import seedrandom from "seedrandom"
 
 import buildProposer from  "../../src/tests/buildProposer"
@@ -66,13 +67,13 @@ class ShuffleTest {
     async runClient() {
         try {
             const checker = new ReadIncWriteConsistencyChecker();
-            const init = await retryOnErrors(async () => {
+            const init = await retryOnErrors(this.loop.timer, async () => {
                 return unwrapOk(await this.proposer.changeQuery(this.key, initChange(0), idQuery))
             }, [isProposeNoError, isAcceptUnknownError]);
             checker.inited(this.key, init.version, init.value);
 
             for(let i=0;i<200;i++) {
-                await retryOnErrors(async () => {
+                await retryOnErrors(this.loop.timer, async () => {
                     const read = unwrapOk(await this.proposer.changeQuery(this.key, idChange, idQuery));
                     checker.seen(this.key, read.version, read.value);
                     checker.writing(this.key, read.version, read.value + 1);
@@ -90,41 +91,6 @@ class ShuffleTest {
             console.info(e);
         }
     }
-}
-
-async function retryOnErrors(action, errors) {
-    while (true) {
-        try {
-            return await action();
-        } catch(e) {
-            if (errors.some(isError => isError(e))) {
-                continue;
-            }
-            throw e;
-        }
-    }
-}
-
-function isProposeNoError(e) {
-    if (!e) return false;
-    if (e.status!="NO") return false;
-    if (!e.details) return false;
-    if (e.details.length!=4) return false;
-    for (const id of ["ERRNO003","ERRNO006","ERRNO008","ERRNO009"]) {
-        if (!e.details.some(x => x.id==id)) return false;
-    }
-    return true;
-}
-
-function isAcceptUnknownError(e) {
-    if (!e) return false;
-    if (e.status!="UNKNOWN") return false;
-    if (!e.details) return false;
-    if (e.details.length!=3) return false;
-    for (const id of ["ERRNO004","ERRNO008","ERRNO009"]) {
-        if (!e.details.some(x => x.id==id)) return false;
-    }
-    return true;
 }
 
 export function record(seed, path) {

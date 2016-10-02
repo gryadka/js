@@ -14,12 +14,12 @@ export default class Proposer {
         this.quorum = quorum;
     }
 
-    async changeQuery(key, change, query) {
+    async changeQuery(key, change, query, extra) {
         if (!this.cache.tryLock(key)) {
             return NO(log().append(msg("ERRNO002")).core);
         }
         if (!this.cache.isLeader(key)) {
-            const err1 = await this._becomeLeader(key);
+            const err1 = await this._becomeLeader(key, extra);
             if (err1) {
                 this.cache.unlock(key);
                 return NO(err1.append(msg("ERRNO003")).core);
@@ -28,7 +28,7 @@ export default class Proposer {
         const [state, err2] = change(this.cache.getState(key));
         this.cache.updateState(key, state);
         const tick = this.time.tick().asJSON();
-        const resp = MultiRequest.fromPromises(this.acceptors.map(x => x.accept(this.id, key, tick, state)));
+        const resp = MultiRequest.fromPromises(this.acceptors.map(x => x.accept(this.id, key, tick, state, extra)));
         const [ok, err3] = await this._await(key, resp, x => x.msg.isOk, this.quorum.write);
         this.cache.unlock(key);
         if (err3) return UNKNOWN(err3.append(msg("ERRNO004")).core);
@@ -36,9 +36,9 @@ export default class Proposer {
         return OK(query(state));
     }
 
-    async _becomeLeader(key) {
+    async _becomeLeader(key, extra) {
         const tick = this.time.tick().asJSON();
-        const resp = MultiRequest.fromPromises(this.acceptors.map(x => x.prepare(this.id, key, tick)));
+        const resp = MultiRequest.fromPromises(this.acceptors.map(x => x.prepare(this.id, key, tick, extra)));
         const [ok, err1] = await this._await(
             key, resp, x => x.msg.isPrepared && !x.acceptor.shouldIgnore, this.quorum.read
         );

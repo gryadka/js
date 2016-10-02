@@ -17,6 +17,7 @@ export class AcceptorMock {
                 const outgoing = {
                     id: ingoing.id,
                     recipient: ingoing.sender,
+                    extra: ingoing.extra,
                     response: this.prepare(ingoing.proposerId, ingoing.key, ingoing.tick)
                 };
                 // console.info(`acceptor(${this.id}): sending`);
@@ -28,6 +29,7 @@ export class AcceptorMock {
                 const outgoing = {
                     id: ingoing.id,
                     recipient: ingoing.sender,
+                    extra: ingoing.extra,
                     response: this.accept(ingoing.proposerId, ingoing.key, ingoing.tick, ingoing.state)
                 };
                 // console.info(`acceptor(${this.id}): sending`);
@@ -79,6 +81,7 @@ export class AcceptorMock {
             info.promise = tick;
             info.ballot = tick;
             info.value = state;
+            
             return { isOk: true};
         } else {
             return { isConflict: true, tick: info.promise };
@@ -161,7 +164,7 @@ export class AcceptorClientMock {
         return hadProgress;
     }
 
-    async prepare(proposerId, key, tick) {
+    async prepare(proposerId, key, tick, extra) {
         const outgoing = {
             id: this.world.uuid(),
             recipient: this.acceptor_id,
@@ -169,7 +172,8 @@ export class AcceptorClientMock {
             cmd: "prepare",
             proposerId: proposerId, 
             key: key, 
-            tick: tick
+            tick: tick,
+            extra: extra
         };
 
         // console.info(`acceptorClient(${this.id}): preparing`);
@@ -195,7 +199,7 @@ export class AcceptorClientMock {
         return { acceptor: this, msg: ingoing.response };
     }
 
-    async accept(proposerId, key, tick, state) {
+    async accept(proposerId, key, tick, state, extra) {
         const outgoing = {
             id: this.world.uuid(),
             recipient: this.acceptor_id,
@@ -204,7 +208,8 @@ export class AcceptorClientMock {
             proposerId: proposerId, 
             key: key, 
             tick: tick,
-            state: state
+            state: state,
+            extra: extra
         };
 
         const ingoing = await (new Promise((resolve, reject) => {

@@ -1,6 +1,6 @@
 
 const CMDS = ["record", "replay"];
-const TESTS = ["single_shuffling", "single_loosing", "single_partitioning"];
+const TESTS = ["c1p1_shuffling", "c1p1_loosing", "c1p1_partitioning", "c1p2_shuffling"];
 
 if (process.argv.length != 5) {
     console.info(process.argv);

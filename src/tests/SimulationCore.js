@@ -195,3 +195,21 @@ export class ShufflingBus {
         yield* this.bus.inbox(id);
     }
 }
+
+export class FilteringBus {
+    constructor(bus, filter) {
+        this.bus = bus;
+        this.filter = filter;
+    }
+    uuid() {
+        return this.bus.uuid(); 
+    }
+    send(message) {
+        if ((this.filter)(message)) {
+            this.bus.send(message);
+        }
+    }
+    *inbox(id) {
+        yield* this.bus.inbox(id);
+    }
+}

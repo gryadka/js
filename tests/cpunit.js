@@ -1,6 +1,6 @@
 
 const CMDS = ["record", "replay"];
-const TESTS = ["network_shuffling", "network_loosing"]
+const TESTS = ["single_shuffling", "single_loosing", "single_partitioning"];
 
 if (process.argv.length != 5) {
     console.info(process.argv);
@@ -34,8 +34,10 @@ function help() {
     console.info("  node.js cpunit.js [record|replay] test seed");
     console.info();
     console.info("  Supported tests:");
-    console.info("   * network_shuffling");
-    console.info("   * network_loosing");
+    for (const test of TESTS) {
+        console.info(`   * ${test}`);
+    }
+    
     console.info();
     console.info("  See tests folder for logs");
 }

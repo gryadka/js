@@ -1,13 +1,14 @@
 import {AcceptorMock, AcceptorClientMock, EonDb} from "../../src/tests/AcceptorMocks"
-import {Bus, TheLoop, ShufflingBus, LoosingBus, MessageFileLogger, MessageFileChecker} from "../../src/tests/SimulationCore"
-
-import {retryOnErrors, isConcurrentNoError} from "../../src/tests/exceptions"
+import {Bus, TheLoop, ShufflingBus, MessageFileLogger, MessageFileChecker} from "../../src/tests/SimulationCore"
+import {retryOnErrors, isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError} from "../../src/tests/exceptions"
 import seedrandom from "seedrandom"
 
 import buildProposer from  "../../src/tests/buildProposer"
 import unwrapOk from  "../../src/tests/unwrapOk"
 import ConcurrencyConsistencyChecker from "../../src/tests/ConcurrencyConsistencyChecker"
 import {initChange, idChange, updateChange, idQuery} from  "../../src/tests/mutators"
+
+import {hrtime} from "process"
 
 class ShuffleTest {
     init(seed) {
@@ -29,26 +30,15 @@ class ShuffleTest {
             "write": 2
         };
 
-        const eonDb = new EonDb("eondb1", this.bus, 1);
-
-        this.loop.addAgent(eonDb);
-
-        const acs = [
-            new AcceptorClientMock("a1c", this.bus, "a1s", false, this.loop.timer, 100),
-            new AcceptorClientMock("a2c", this.bus, "a2s", false, this.loop.timer, 100),
-            new AcceptorClientMock("a3c", this.bus, "a3s", false, this.loop.timer, 100)
-        ];
-
-        acs.forEach(ac => this.loop.addAgent(ac));
-
-        this.proposer = buildProposer(1, eonDb, acs, quorum);
-
         this.keys = ["foo1", "foo2"];
+
+        this.proposer1 = createProposer(this.loop, this.bus, "p1", quorum);
+        this.proposer2 = createProposer(this.loop, this.bus, "p2", quorum);
+        this.proposers = [this.proposer1, this.proposer2];
     }
 
     setLogger(logger) {
         this.loop.setLogger(logger);
-        this.logger = logger;
     }
 
     tick() {
@@ -68,7 +58,7 @@ class ShuffleTest {
                     console.info(e);
                 }
             })();
-            
+
             return true;
         }
         return false;
@@ -80,33 +70,47 @@ class ShuffleTest {
 
     async runClient(clientId, checker) {
         var keys = this.keys.slice(0);
-        
+
         await retryOnErrors(this.loop.timer, async () => {
             while (keys.length>0) {
+                const proposer = oneOf(this.random, this.proposers);
                 const [key, tail] = randomPop(this.random, keys);
-                const init = unwrapOk(await this.proposer.changeQuery(key, initChange(0, clientId), idQuery, clientId));
+                const init = unwrapOk(await proposer.changeQuery(key, initChange(0, clientId), idQuery, clientId));
                 checker.inited(clientId, key, init.version, init.value);
                 keys = tail;
             }
-        }, [isConcurrentNoError]);
+        }, [isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError]);
         
         let value = 0
         while(value < 200) {
             await retryOnErrors(this.loop.timer, async () => {
+                const proposer = oneOf(this.random, this.proposers);
                 const key = oneOf(this.random, this.keys);
                 checker.sync(clientId);
-                const read = unwrapOk(await this.proposer.changeQuery(key, idChange, idQuery));
+                const read = unwrapOk(await proposer.changeQuery(key, idChange, idQuery));
                 value = Math.max(read.value, value);
                 checker.seen(clientId, key, read.version, read.value);
                 checker.writing(clientId, key, read.version, read.value + 1);
-                const write = unwrapOk(await this.proposer.changeQuery(key, updateChange({
+                const write = unwrapOk(await proposer.changeQuery(key, updateChange({
                     version: read.version,
                     value: read.value + 1
                 }), idQuery));
                 checker.written(clientId, key, write.version, write.value);
-            }, [ isConcurrentNoError ]);
+            }, [ isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError ]);
         }
     }
+}
+
+function createProposer(loop, bus, id, quorum) {
+    const eonDb = new EonDb(id + "eondb", bus, 1);
+    loop.addAgent(eonDb);
+    const acs = [
+        new AcceptorClientMock(id + "a1c", bus, "a1s", false, loop.timer, 100),
+        new AcceptorClientMock(id + "a2c", bus, "a2s", false, loop.timer, 100),
+        new AcceptorClientMock(id + "a3c", bus, "a3s", false, loop.timer, 100)
+    ];
+    acs.forEach(ac => loop.addAgent(ac));
+    return buildProposer(id, eonDb, acs, quorum);
 }
 
 export function record(seed, path) {
@@ -122,6 +126,7 @@ export function replay(seed, path) {
     test.setLogger(new MessageFileChecker(path));
     test.run();
 }
+
 
 function oneOf(random, array) {
     return array[Math.floor(random() * array.length)];

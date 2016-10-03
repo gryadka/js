@@ -48,7 +48,7 @@ export function isAcceptUnknownError(e) {
     return true;
 }
 
-function isLeadershipUnknownError(e) {
+export function isLeadershipUnknownError(e) {
     if (!e) return false;
     if (e.status!="UNKNOWN") return false;
     if (!e.details) return false;
@@ -59,7 +59,7 @@ function isLeadershipUnknownError(e) {
     return true;
 }
 
-function isLeadershipNoError(e) {
+export function isLeadershipNoError(e) {
     if (!e) return false;
     if (e.status!="NO") return false;
     if (!e.details) return false;

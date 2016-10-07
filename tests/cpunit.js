@@ -1,3 +1,4 @@
+import {MessageFileLogger, MessageFileChecker} from "../src/tests/SimulationCore"
 
 const CMDS = ["record", "replay"];
 const TESTS = ["c1p1_shuffling", "c1p1_loosing", "c1p1_partitioning", "c1p2_shuffling", "c2p1_shuffling", "c2p2_shuffling", "c2p2_loosing", "c2p2_partitioning_x"];
@@ -11,14 +12,14 @@ if (process.argv.length != 5) {
 assertContains({element: process.argv[2], set: CMDS});
 assertContains({element: process.argv[3], set: TESTS});
 
+const test = require(`./${process.argv[3]}/test`).test;
+
 if (process.argv[2]=="record") {
-    const record = require(`./${process.argv[3]}/test`).record;
-    record(process.argv[4], `./tests/${process.argv[3]}/network.log`);
+    test(process.argv[4], new MessageFileLogger(`./tests/${process.argv[3]}/network.log`));
 }
 
 if (process.argv[2]=="replay") {
-    const replay = require(`./${process.argv[3]}/test`).replay;
-    replay(process.argv[4], `./tests/${process.argv[3]}/network.log`);
+    test(process.argv[4], new MessageFileChecker(`./tests/${process.argv[3]}/network.log`));
 }
 
 function assertContains({element, set} = {}) {

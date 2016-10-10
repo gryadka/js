@@ -1,7 +1,7 @@
 import {MessageFileLogger, MessageFileChecker} from "../src/tests/SimulationCore"
 
 const CMDS = ["record", "replay"];
-const TESTS = ["c1p1_shuffling", "c1p1_loosing", "c1p1_partitioning", "c1p2_shuffling", "c2p1_shuffling", "c2p2_shuffling", "c2p2_loosing", "c2p2_partitioning_x"];
+const TESTS = ["c2p2_onoff","c1p1_shuffling", "c1p1_loosing", "c1p1_partitioning", "c1p2_shuffling", "c2p1_shuffling", "c2p2_shuffling", "c2p2_loosing", "c2p2_partitioning_x"];
 
 if (process.argv.length != 5) {
     console.info(process.argv);

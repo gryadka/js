@@ -7,6 +7,7 @@ export class TheLoop {
         this.idgen = 42;
         this.messages = new Map();
         this.logger = null;
+        this.isBanned = new Map();
     }
     setLogger(logger) {
         this.logger = logger;
@@ -16,6 +17,12 @@ export class TheLoop {
     }
     deliver(message) {
         if (message.recipient) {
+            if (!this.isBanned.has(message.recipient)) {
+                this.isBanned.set(message.recipient, false);
+            }
+            if (this.isBanned.get(message.recipient)) {
+                return;
+            }
             if (!this.messages.has(message.recipient)) {
                 this.messages.set(message.recipient, []);
             }
@@ -23,6 +30,32 @@ export class TheLoop {
         } else {
             throw new Error("Missing recipient");
         }
+    }
+    dropAllMessagesFor(id) {
+        if (this.messages.has(id)) {
+            const messages = this.messages.get(id);
+            while (messages.length > 0) {
+                messages.pop();
+            }
+        }
+    }
+    banMessagesTo(id) {
+        if (!this.isBanned.has(id)) {
+            this.isBanned.set(id, false);
+        }
+        if (this.isBanned.get(id)) {
+            throw new Error("Already banned.");
+        }
+        this.isBanned.set(id, true);
+    }
+    unbanMessagesTo(id) {
+        if (!this.isBanned.has(id)) {
+            this.isBanned.set(id, false);
+        }
+        if (!this.isBanned.get(id)) {
+            throw new Error("Already unbanned.");
+        }
+        this.isBanned.set(id, false);
     }
     *inbox(id) {
         if (this.messages.has(id)) {
@@ -47,8 +80,8 @@ export class TheLoop {
             // console.info("Loop tick");
             hadProgress = false
             for (const agent of this.agents) {
-                if (agent.tick()) {
-                    hadProgress = true;
+                if (agent.isAlive()) {
+                    if (agent.tick()) hadProgress = true;
                 }
             }
             if (this.timer.tick() || this.timer.hasPostponed()) {
@@ -153,6 +186,15 @@ export class Bus {
     send(message) {
         this.loop.deliver(message);
     }
+    dropAllMessagesFor(id) {
+        this.loop.dropAllMessagesFor(id);
+    }
+    banMessagesTo(id) {
+        this.loop.banMessagesTo(id);
+    }
+    unbanMessagesTo(id) {
+        this.loop.unbanMessagesTo(id);
+    }
     *inbox(id) {
         yield* this.loop.inbox(id);
     }
@@ -175,6 +217,15 @@ export class LoosingBus {
     *inbox(id) {
         yield* this.bus.inbox(id);
     }
+    dropAllMessagesFor(id) {
+        this.bus.dropAllMessagesFor(id);
+    }
+    banMessagesTo(id) {
+        this.bus.banMessagesTo(id);
+    }
+    unbanMessagesTo(id) {
+        this.bus.unbanMessagesTo(id);
+    }
 }
 
 export class ShufflingBus {
@@ -194,6 +245,15 @@ export class ShufflingBus {
     *inbox(id) {
         yield* this.bus.inbox(id);
     }
+    dropAllMessagesFor(id) {
+        this.bus.dropAllMessagesFor(id);
+    }
+    banMessagesTo(id) {
+        this.bus.banMessagesTo(id);
+    }
+    unbanMessagesTo(id) {
+        this.bus.unbanMessagesTo(id);
+    }
 }
 
 export class FilteringBus {
@@ -211,5 +271,14 @@ export class FilteringBus {
     }
     *inbox(id) {
         yield* this.bus.inbox(id);
+    }
+    dropAllMessagesFor(id) {
+        this.bus.dropAllMessagesFor(id);
+    }
+    banMessagesTo(id) {
+        this.bus.banMessagesTo(id);
+    }
+    unbanMessagesTo(id) {
+        this.bus.unbanMessagesTo(id);
     }
 }

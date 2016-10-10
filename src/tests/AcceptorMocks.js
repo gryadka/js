@@ -7,6 +7,10 @@ export class AcceptorMock {
         this.storage = new Map();
     }
 
+    isAlive() {
+        return true;
+    }
+
     tick() {
         let hadProgress = false;
         for (const ingoing of this.world.inbox(this.id)) {
@@ -92,11 +96,16 @@ export class AcceptorMock {
 
 
 export class EonDb {
+    // TODO: refactor id into address
     constructor(id, world, eon) {
         this.id = id;
         this.world = world;
         this.eon = eon;
         this.resolvers = new Map();
+    }
+
+    isAlive() {
+        return true;
     }
 
     tick() {
@@ -137,7 +146,7 @@ export class EonDb {
 }
 
 export class AcceptorClientMock {
-    constructor(id, world, acceptor_id, shouldIgnore, timer, timeout) {
+    constructor(id, world, acceptor_id, shouldIgnore, timer, timeout, isAlive) {
         this.id = id;
         this.world = world;
         this.acceptor_id = acceptor_id;
@@ -145,6 +154,21 @@ export class AcceptorClientMock {
         this.resolvers = new Map();
         this.timer = timer;
         this.timeout = timeout;
+        this._isAlive = isAlive;
+    }
+    turnOff() {
+        if (!this._isAlive) throw new Error("already off");
+        this._isAlive = false;
+        this.world.banMessagesTo(this.id);
+        this.world.dropAllMessagesFor(this.id);
+    }
+    turnOn() {
+        if (this._isAlive) throw new Error("already on");
+        this._isAlive = true;
+        this.world.unbanMessagesTo(this.id);
+    }
+    isAlive() {
+        return this._isAlive;
     }
 
     tick() {

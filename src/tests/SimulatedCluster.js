@@ -10,10 +10,32 @@ class AcceptorController {
 }
 
 class ProposerController {
-    constructor(proposerId, quorum, acceptorProxies) {
+    constructor(proposerId, quorum, acceptorProxies, isAlive) {
         this.proposerId = proposerId;
         this.quorum = quorum;
         this.acceptorProxies = acceptorProxies;
+        this.isAttached = false;
+        this.proposer = null;
+        this.acceptorClients = [];
+        this.isAlive = isAlive;
+    }
+    turnOn() {
+        if (!this.isAttached) throw new Error("ProposerController should be attached to the Proposer");
+        for (const client of this.acceptorClients) {
+            client.turnOn();
+        }
+    }
+    turnOff() {
+        if (!this.isAttached) throw new Error("ProposerController should be attached to the Proposer");
+        for (const client of this.acceptorClients) {
+            client.turnOff();
+        }
+    }
+    attach(proposer, acceptorClients) {
+        if (this.isAttached) throw new Error("You can call attach only once.");
+        this.proposer = proposer;
+        this.acceptorClients = acceptorClients;
+        this.isAttached = true;
     }
 }
 
@@ -66,8 +88,8 @@ export class SimulatedCluster {
                 this.acceptorProxies.push(acceptor);
                 return acceptor;
             },
-            addProposer: (proposerId, quorum, acceptorProxies) => {
-                const proposer = new ProposerController(proposerId, quorum, acceptorProxies);
+            addProposer: (proposerId, quorum, acceptorProxies, isAlive) => {
+                const proposer = new ProposerController(proposerId, quorum, acceptorProxies, isAlive);
                 this.proposerProxies.push(proposer)
                 return proposer;
             }
@@ -104,8 +126,13 @@ function createProposer(loop, bus, proposerProxy) {
     
     const acs = [];
     for (const acceptorProxy of proposerProxy.acceptorProxies) {
-        acs.push(new AcceptorClientMock(id + ":" + acceptorProxy.acceptorId, bus, acceptorProxy.acceptorId, false, loop.timer, 100));
+        acs.push(new AcceptorClientMock(
+            id + ":" + acceptorProxy.acceptorId, bus, 
+            acceptorProxy.acceptorId, false, loop.timer, 100, proposerProxy.isAlive
+        ));
     }
     acs.forEach(ac => loop.addAgent(ac));
-    return buildProposer(id, eonDb, acs, proposerProxy.quorum);
+    const proposer = buildProposer(id, eonDb, acs, proposerProxy.quorum);
+    proposerProxy.attach(proposer, acs);
+    return proposer;
 }

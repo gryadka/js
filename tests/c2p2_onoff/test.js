@@ -20,31 +20,12 @@ export function test(seed, logger) {
     system.transformBus((bus, timer, random) => new ShufflingBus(bus, timer, random));
     const shared = InitInLoopIncKeysClient.createSharedMemory();
 
-    const onStep = () => {
-        if (shared.status=="ACTIVE" && shared.didAllClientsMakeAtLeastIterations(30)) {
-            shared.status = "TURNING OFF P1";
-            postpone(() => {
-                shared.status = "P1_OFF";
-                p1.turnOff();
-            });
-        }
-        if (shared.status=="P1_OFF" && shared.didAllClientsMakeAtLeastIterations(170)) {
-            shared.status = "TURNING ON P1";
-            postpone(() => {
-                shared.status = "P1_ON";
-                p1.turnOn();
-            });
-        }
-        if (shared.status=="P1_ON" && shared.didAllClientsMakeAtLeastIterations(200)) {
-            shared.status = "EXITED";
-        }
-        function postpone(fn) {
-            system.timer.postpone(system.timer.now() + 10 * system.random(), fn);
-        }
-    };
+    const onStep = ClusterDriver({cluster: system, shared: shared, timeVariance: 10}).checkOneAfterAnother([
+        [() => shared.didAllClientsMakeAtLeastIterations(30), () => p1.turnOff()],
+        [() => shared.didAllClientsMakeAtLeastIterations(170), () => p1.turnOn()],
+        [() => shared.didAllClientsMakeAtLeastIterations(200), () => {}]
+    ]);
 
-
-//    const onStep = ClusterDriver({cluster: system, shared: shared, timeVariance: 10}).exitOnAllClientsIteratedAtLeast(200);
     const client = curry(InitInLoopIncKeysClient.asRunnable)({
         cluster: system, keys: keys, onStep: onStep, shared: shared,
         initExpectedErrors: [isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError, isAcceptUnknownError, isProposeNoError], 

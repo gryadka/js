@@ -13,7 +13,7 @@ export function test(seed, logger) {
             "write": 2
         };
         var [a1, a2, a3] = ["a1", "a2", "a3"].map(id => tx.addAcceptor(id));
-        tx.addProposer("p1", quorum, [a1, a2, a3]);
+        tx.addProposer("p1", quorum, [a1, a2, a3], true);
     });
     system.transformBus((bus, timer, random) => new ShufflingBus(bus, timer, random));
     system.transformBus((bus, timer, random) => new FilteringBus(bus, message => {
@@ -25,28 +25,12 @@ export function test(seed, logger) {
         return true;
     }));
     const shared = InitInLoopIncKeysClient.createSharedMemory();
-    const onStep = () => {
-        if (shared.status=="ACTIVE" && shared.didAllClientsMakeAtLeastIterations(30)) {
-            shared.status = "PARTITIONING";
-            postpone(() => {
-                shared.status = "PARTITIONED";
-                isPartitioned = true;
-            });
-        }
-        if (shared.status=="PARTITIONED" && shared.didAllClientsMakeAtLeastIterations(170)) {
-            shared.status = "HEALING";
-            postpone(() => {
-                shared.status = "HEALED";
-                isPartitioned = false;
-            });
-        }
-        if (shared.status=="HEALED" && shared.didAllClientsMakeAtLeastIterations(200)) {
-            shared.status = "EXITED";
-        }
-        function postpone(fn) {
-            system.timer.postpone(system.timer.now() + 10 * system.random(), fn);
-        }
-    };
+
+    const onStep = ClusterDriver({cluster: system, shared: shared, timeVariance: 10}).checkOneAfterAnother([
+        [() => shared.didAllClientsMakeAtLeastIterations(30), () => (isPartitioned = true)],
+        [() => shared.didAllClientsMakeAtLeastIterations(170), () => (isPartitioned = false)],
+        [() => shared.didAllClientsMakeAtLeastIterations(200), () => {}]
+    ]);
 
     const client = curry(InitInLoopIncKeysClient.asRunnable)({
         cluster: system, keys: keys, onStep: onStep, shared: shared,

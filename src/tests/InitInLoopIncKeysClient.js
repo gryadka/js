@@ -46,6 +46,28 @@ export function ClusterDriver({cluster, shared, timeVariance}) {
                     });
                 }
             }; 
+        },
+        "checkOneAfterAnother": function(checks) {
+            if (checks.length==0) throw new Error("at least one check is required");
+
+            let expectedState = "ACTIVE";
+            let [check, action] = checks.shift();
+
+            return () => {
+                if (shared.status == expectedState && check()) {
+                    action();
+                    if (checks.length==0) {
+                        shared.status = "EXITED";
+                    } else {
+                        shared.status = "SCHRODINGER";
+                        expectedState = "ACTIVE";
+                        [check, action] = checks.shift();
+                        cluster.timer.postpone(cluster.timer.now() + timeVariance * cluster.random(), () => {
+                            shared.status = expectedState;
+                        });
+                    }
+                }
+            };
         }
     }
 }

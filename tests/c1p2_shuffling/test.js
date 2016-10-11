@@ -13,8 +13,8 @@ export function test(seed, logger) {
             "write": 2
         };
         var [a1, a2, a3] = ["a1", "a2", "a3"].map(id => tx.addAcceptor(id));
-        tx.addProposer("p1", quorum, [a1, a2, a3]);
-        tx.addProposer("p2", quorum, [a1, a2, a3]);
+        tx.addProposer("p1", quorum, [a1, a2, a3], true);
+        tx.addProposer("p2", quorum, [a1, a2, a3], true);
     });
     system.transformBus((bus, timer, random) => new ShufflingBus(bus, timer, random));
     const shared = InitInLoopIncKeysClient.createSharedMemory();

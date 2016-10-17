@@ -77,7 +77,6 @@ export class TheLoop {
         let idleLoops = 0;
 
         const iter = () => setTimeout(() => {
-            // console.info("Loop tick");
             hadProgress = false
             for (const agent of this.agents) {
                 if (agent.isAlive()) {
@@ -99,11 +98,8 @@ export class TheLoop {
                 if (this.logger != null) {
                     this.logger.flush();
                 }
-                // console.info("Loop stop");
             }
         }, 0);
-
-        // console.info("Loop start");
         iter();
     }
 }
@@ -229,16 +225,21 @@ export class LoosingBus {
 }
 
 export class ShufflingBus {
-    constructor(bus, timer, random) {
+    constructor(bus, timer, random, timeVariance) {
         this.bus = bus;
         this.timer = timer;
         this.random = random;
+        if (timeVariance) {
+            this.timeVariance = timeVariance;
+        } else {
+            this.timeVariance = 10;
+        }
     }
     uuid() {
         return this.bus.uuid(); 
     }
     send(message) {
-        this.timer.postpone(this.timer.now() + this.random() * 10, () => {
+        this.timer.postpone(this.timer.now() + this.random() * this.timeVariance, () => {
             this.bus.send(message);
         });
     }

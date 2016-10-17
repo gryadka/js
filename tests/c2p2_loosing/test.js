@@ -13,8 +13,8 @@ export function test(seed, logger) {
             "write": 2
         };
         var [a1, a2, a3] = ["a1", "a2", "a3"].map(id => tx.addAcceptor(id));
-        tx.addProposer("p1", quorum, [a1, a2, a3], true);
-        tx.addProposer("p2", quorum, [a1, a2, a3], true);
+        tx.addProposer("p1", quorum, [a1, a2, a3], true, 100, false);
+        tx.addProposer("p2", quorum, [a1, a2, a3], true, 100, false);
     });
     system.transformBus((bus, timer, random) => new ShufflingBus(bus, timer, random));
     system.transformBus((bus, timer, random) => new LoosingBus(bus, random, .9));
@@ -23,8 +23,7 @@ export function test(seed, logger) {
 
     const client = curry(InitInLoopIncKeysClient.asRunnable)({
         cluster: system, keys: keys, onStep: onStep, shared: shared,
-        initExpectedErrors: [isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError, isAcceptUnknownError, isProposeNoError], 
-        readUpdateExpectedErrors: [isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError, isAcceptUnknownError, isProposeNoError]
+        recoverableErrors: [isConcurrentNoError, isLeadershipNoError, isLeadershipUnknownError, isAcceptUnknownError, isProposeNoError]
     })
     
     const c1 = system.spawnOnStart(client({clientId: "c1"}));

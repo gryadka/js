@@ -10,7 +10,7 @@ class AcceptorController {
 }
 
 class ProposerController {
-    constructor(proposerId, quorum, acceptorProxies, isAlive) {
+    constructor(proposerId, quorum, acceptorProxies, isAlive, timeout, isLeaderless) {
         this.proposerId = proposerId;
         this.quorum = quorum;
         this.acceptorProxies = acceptorProxies;
@@ -18,6 +18,8 @@ class ProposerController {
         this.proposer = null;
         this.acceptorClients = [];
         this.isAlive = isAlive;
+        this.timeout = timeout;
+        this.isLeaderless = isLeaderless;
     }
     turnOn() {
         if (!this.isAttached) throw new Error("ProposerController should be attached to the Proposer");
@@ -56,7 +58,7 @@ class ThreadController {
     }
     async waitAsync() {
         await this.initing;
-        await this.process;
+        await (this.process);
     }
 }
 
@@ -88,8 +90,11 @@ export class SimulatedCluster {
                 this.acceptorProxies.push(acceptor);
                 return acceptor;
             },
-            addProposer: (proposerId, quorum, acceptorProxies, isAlive) => {
-                const proposer = new ProposerController(proposerId, quorum, acceptorProxies, isAlive);
+            addProposer: (proposerId, quorum, acceptorProxies, isAlive, timeout, isLeaderless) => {
+                if (!timeout) {
+                    timeout = 100;
+                }
+                const proposer = new ProposerController(proposerId, quorum, acceptorProxies, isAlive, timeout, isLeaderless);
                 this.proposerProxies.push(proposer)
                 return proposer;
             }
@@ -109,7 +114,7 @@ export class SimulatedCluster {
             this.loop.addAgent(acceptor);
         }
         for (const proposerProxy of this.proposerProxies) {
-            const proposer = createProposer(this.loop, this.bus, proposerProxy);
+            const proposer = createProposer(this.loop, this.bus, proposerProxy, proposerProxy.timeout, proposerProxy.isLeaderless);
             this.proposers.push(proposer);
         }
         for (const thread of this.runnables) {
@@ -119,7 +124,7 @@ export class SimulatedCluster {
     }
 }
 
-function createProposer(loop, bus, proposerProxy) {
+function createProposer(loop, bus, proposerProxy, timeout, isLeaderless) {
     const id = proposerProxy.proposerId;
     const eonDb = new EonDb(id + "eondb", bus, 1);
     loop.addAgent(eonDb);
@@ -128,11 +133,11 @@ function createProposer(loop, bus, proposerProxy) {
     for (const acceptorProxy of proposerProxy.acceptorProxies) {
         acs.push(new AcceptorClientMock(
             id + ":" + acceptorProxy.acceptorId, bus, 
-            acceptorProxy.acceptorId, false, loop.timer, 100, proposerProxy.isAlive
+            acceptorProxy.acceptorId, false, loop.timer, timeout, proposerProxy.isAlive
         ));
     }
     acs.forEach(ac => loop.addAgent(ac));
-    const proposer = buildProposer(id, eonDb, acs, proposerProxy.quorum);
+    const proposer = buildProposer(id, eonDb, acs, proposerProxy.quorum, isLeaderless);
     proposerProxy.attach(proposer, acs);
     return proposer;
 }

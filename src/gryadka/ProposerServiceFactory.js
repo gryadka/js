@@ -27,7 +27,7 @@ class ProposerService {
         this.acceptors = settings.acceptors.map(x => new AcceptorClient(x));
         this.acceptors.forEach(x => x.start());
 
-        const proposer = new Proposer(settings.id, cache, this.acceptors, time, settings.quorum);
+        const proposer = new Proposer(settings.id, cache, this.acceptors, time, settings.quorum, false);
 
         const app = express();
         app.use(bodyParser.urlencoded({ extended: true }));

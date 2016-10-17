@@ -1,4 +1,4 @@
-export async function retryOnErrors(timer, action, errors) {
+export async function retryOnErrors(timer, action, errors, extra) {
     while (true) {
         // to put each while's iteration as a new event in the event loop  
         await new Promise((reply, reject) => {
@@ -13,6 +13,12 @@ export async function retryOnErrors(timer, action, errors) {
             throw e;
         }
     }
+}
+
+export function isConsistencyViolation(e) {
+    if (!e) return false;
+    if (e.isConsistencyViolation) return true;
+    return false;
 }
 
 export function isConcurrentNoError(e) {

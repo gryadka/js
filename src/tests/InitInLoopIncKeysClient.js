@@ -73,12 +73,12 @@ export function ClusterDriver({cluster, shared, timeVariance}) {
 }
 
 export class InitInLoopIncKeysClient {
-    static asRunnable({cluster, clientId, keys, onStep, shared, initExpectedErrors, readUpdateExpectedErrors}) {
+    static asRunnable({cluster, clientId, keys, onStep, shared, recoverableErrors, requiredError}) {
         const client = new InitInLoopIncKeysClient(cluster, clientId, keys, shared);
-        client.setInitExpectedErrors(initExpectedErrors);
-        client.setReadUpdateExpectedErrors(readUpdateExpectedErrors);
+        client.setRecoverableErrors(recoverableErrors);
+        client.setRequiredError(requiredError);
         client.setOnUpdateHandler(onStep);
-        return () => client.start();
+        return (async () => await client.start());
     }
 
     static createSharedMemory() {
@@ -88,7 +88,14 @@ export class InitInLoopIncKeysClient {
             checker: new ConcurrencyConsistencyChecker(),
             didAllClientsMakeAtLeastIterations: function(steps) {
                 for (const clientId of this.clients.keys()) {
-                    if (this.clients.get(clientId).steps < steps) {
+                    const mymem = this.clients.get(clientId);
+                    if (mymem.hasFailed) {
+                        return true;
+                    }
+                }
+                for (const clientId of this.clients.keys()) {
+                    const mymem = this.clients.get(clientId);
+                    if (mymem.steps < steps) {
                         return false;
                     }
                 }
@@ -106,16 +113,16 @@ export class InitInLoopIncKeysClient {
         this.clientId = clientId;
         this.keys = keys;
         this.shared = shared;
-        this.shared.clients.set(this.clientId, { values: new Map(), steps: 0 });
+        this.shared.clients.set(this.clientId, { values: new Map(), steps: 0, hasFailed: false });
         this.onStep = (client) => {};
-        this.initExpectedErrors = [];
-        this.readUpdateExpectedErrors = [];
+        this.recoverableErrors = [];
+        this.requiredError = null;
     }
-    setInitExpectedErrors(initExpectedErrors) {
-        this.initExpectedErrors = initExpectedErrors;
+    setRequiredError(requiredError) {
+        this.requiredError = requiredError;
     }
-    setReadUpdateExpectedErrors(readUpdateExpectedErrors) {
-        this.readUpdateExpectedErrors = readUpdateExpectedErrors;
+    setRecoverableErrors(recoverableErrors) {
+        this.recoverableErrors = recoverableErrors;
     }
     setOnUpdateHandler(onUpdateHandler) {
         this.onStep = onUpdateHandler;
@@ -125,36 +132,37 @@ export class InitInLoopIncKeysClient {
         
         let toInit = this.keys.slice(0); // making a copy
 
-        await retryOnErrors(this.timer, async () => {
-            while (toInit.length>0) {
-                const proposer = oneOf(this.random, this.proposers);
-                const [key, tail] = randomPop(this.random, toInit);
-                const init = unwrapOk(await proposer.changeQuery(key, initChange(0), idQuery, this.clientId));
-                mymem.values.set(key, {version: init.version, value: init.value});
-                this.checker.inited(this.clientId, key, init.version, init.value);
-                toInit = tail;
-            }
-        }, this.initExpectedErrors);
-
         mymem.steps = 0;
-        while (this.shared.status != "EXITED") {
-            (this.onStep)(this);
-            await retryOnErrors(this.timer, async () => {
-                const proposer = oneOf(this.random, this.proposers);
-                const key = oneOf(this.random, this.keys);
-                this.checker.sync(this.clientId);
-                const read = unwrapOk(await proposer.changeQuery(key, idChange, idQuery));
-                mymem.values.set(key, {version: read.version, value: read.value});
-                this.checker.seen(this.clientId, key, read.version, read.value);
-                this.checker.writing(this.clientId, key, read.version, read.value + 1);
-                const write = unwrapOk(await proposer.changeQuery(key, updateChange({
-                    version: read.version,
-                    value: read.value + 1
-                }), idQuery));
-                this.checker.written(this.clientId, key, write.version, write.value);
-                mymem.values.set(key, {version: write.version, value: write.value});
-            }, this.readUpdateExpectedErrors);
-            mymem.steps++;
+        mymem.hasFailed = false;
+        try {
+            while (this.shared.status != "EXITED") {
+                (this.onStep)(this);
+                await retryOnErrors(this.timer, async () => {
+                    const proposer = oneOf(this.random, this.proposers);
+                    const key = oneOf(this.random, this.keys);
+                    this.checker.sync(this.clientId);
+                    const read = unwrapOk(await proposer.changeQuery(key, initChange(0), idQuery, this.clientId));
+                    mymem.values.set(key, {version: read.version, value: read.value});
+                    this.checker.seen(this.clientId, key, read.version, read.value);
+                    this.checker.writing(this.clientId, key, read.version, read.value + 1);
+                    const write = unwrapOk(await proposer.changeQuery(key, updateChange({
+                        version: read.version,
+                        value: read.value + 1
+                    }), idQuery));
+                    this.checker.written(this.clientId, key, write.version, write.value);
+                    mymem.values.set(key, {version: write.version, value: write.value});
+                }, this.recoverableErrors, this.clientId);
+                mymem.steps++;
+            }
+            if (this.requiredError) {
+                throw new Error("Error is required");
+            }
+        } catch(e) {
+            mymem.hasFailed = true;
+            if (!this.requiredError(e)) {
+                console.info("ERROR");
+                console.info(e);
+            }
         }
     }
 }

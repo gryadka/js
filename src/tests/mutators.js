@@ -26,10 +26,7 @@ export function initChange(x) {
                 value: x
             }, null]
         } else {
-            return [{
-                version: state.version+1,
-                value: state.value
-            }, null]
+            return [state, null]
         }
     }
 }

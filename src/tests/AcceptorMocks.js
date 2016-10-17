@@ -15,8 +15,6 @@ export class AcceptorMock {
         let hadProgress = false;
         for (const ingoing of this.world.inbox(this.id)) {
             hadProgress = true;
-            // console.info(`acceptor(${this.id}): processing`);
-            // console.info(ingoing);
             if (ingoing.cmd == "prepare") {
                 const outgoing = {
                     id: ingoing.id,
@@ -24,10 +22,7 @@ export class AcceptorMock {
                     extra: ingoing.extra,
                     response: this.prepare(ingoing.proposerId, ingoing.key, ingoing.tick)
                 };
-                // console.info(`acceptor(${this.id}): sending`);
-                // console.info(outgoing);
                 this.world.send(outgoing);
-                // console.info(`acceptor(${this.id}): sent`);
             }
             if (ingoing.cmd == "accept") {
                 const outgoing = {
@@ -36,12 +31,8 @@ export class AcceptorMock {
                     extra: ingoing.extra,
                     response: this.accept(ingoing.proposerId, ingoing.key, ingoing.tick, ingoing.state)
                 };
-                // console.info(`acceptor(${this.id}): sending`);
-                // console.info(outgoing);
                 this.world.send(outgoing);
-                // console.info(`acceptor(${this.id}): sent`);
             }
-            // console.info(`acceptor(${this.id}): processed`);
         }
         return hadProgress;
     }
@@ -112,15 +103,12 @@ export class EonDb {
         let hadProgress = false;
         for (const message of this.world.inbox(this.id)) {
             hadProgress = true;
-            // console.info(`eondb(${this.id}): processing`);
-            // console.info(message);
             if (this.eon < message.eon) {
                 this.eon = message.eon;
                 const resolve = this.resolvers.get(message.id);
                 this.resolvers.delete(message.id);
                 resolve(this.eon);
             }
-            // console.info(`eondb(${this.id}): processed`);
         }
         return hadProgress;
     }
@@ -133,10 +121,7 @@ export class EonDb {
                 eon: eon 
             };
             this.resolvers.set(outgoing.id, resolve);
-            // console.info(`eondb(${this.id}): sending`);
-            // console.info(outgoing);
             this.world.send(outgoing);
-            // console.info(`eondb(${this.id}): sent`);
         });
     }
 
@@ -175,15 +160,11 @@ export class AcceptorClientMock {
         let hadProgress = false;
         for (const message of this.world.inbox(this.id)) {
             hadProgress = true;
-            // console.info(`acceptorClient(${this.id}): processing`);
-            // console.info(message);
-
             if (this.resolvers.has(message.id)) {
                 const resolve = this.resolvers.get(message.id);
                 this.resolvers.delete(message.id);
                 resolve(message);
             }
-            // console.info(`acceptorClient(${this.id}): processed`);
         }
         return hadProgress;
     }
@@ -199,13 +180,8 @@ export class AcceptorClientMock {
             tick: tick,
             extra: extra
         };
-
-        // console.info(`acceptorClient(${this.id}): preparing`);
-
         const ingoing = await (new Promise((resolve, reject) => {
             this.resolvers.set(outgoing.id, resolve);
-            // console.info(`acceptorClient(${this.id}): sending`);
-            // console.info(outgoing);
             this.world.send(outgoing);
             this.timer.postpone(this.timer.now() + this.timeout, () => {
                 if (this.resolvers.has(outgoing.id)) {
@@ -213,13 +189,7 @@ export class AcceptorClientMock {
                     resolve({response: {isError: true}});
                 }
             });
-            // console.info(`acceptorClient(${this.id}): sent`);
         }));
-
-
-
-        // console.info(`acceptorClient(${this.id}): prepared`);
-
         return { acceptor: this, msg: ingoing.response };
     }
 
@@ -238,8 +208,6 @@ export class AcceptorClientMock {
 
         const ingoing = await (new Promise((resolve, reject) => {
             this.resolvers.set(outgoing.id, resolve);
-            // console.info(`acceptorClient(${this.id}): sending`);
-            // console.info(outgoing);
             this.world.send(outgoing);
             this.timer.postpone(this.timer.now() + this.timeout, () => {
                 if (this.resolvers.has(outgoing.id)) {
@@ -247,7 +215,6 @@ export class AcceptorClientMock {
                     resolve({response: {isError: true}});
                 }
             });
-            // console.info(`acceptorClient(${this.id}): sent`);
         }));
 
         return { acceptor: this, msg: ingoing.response }; 

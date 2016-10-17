@@ -6,19 +6,20 @@ const NO = typedRespondAbstractFactory("NO");
 const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
 
 export default class Proposer {
-    constructor(id, cache, acceptors, time, quorum) {
+    constructor(id, cache, acceptors, time, quorum, isLeaderless) {
         this.id = id;
         this.cache = cache;
         this.acceptors = acceptors;
         this.time = time;
         this.quorum = quorum;
+        this.isLeaderless = isLeaderless;
     }
 
     async changeQuery(key, change, query, extra) {
         if (!this.cache.tryLock(key)) {
             return NO(log().append(msg("ERRNO002")).core);
         }
-        if (!this.cache.isLeader(key)) {
+        if (this.isLeaderless || !this.cache.isLeader(key)) {
             const err1 = await this._becomeLeader(key, extra);
             if (err1) {
                 this.cache.unlock(key);

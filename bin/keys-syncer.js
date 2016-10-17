@@ -22,7 +22,7 @@ class Syncer {
         this.acceptors = settings.acceptors.map(x => new AcceptorClient(x));
         this.acceptors.forEach(x => x.start());
 
-        this.proposer = new Proposer(settings.id, cache, this.acceptors, time, settings.quorum);
+        this.proposer = new Proposer(settings.id, cache, this.acceptors, time, settings.quorum, false);
 
         return this;
     }

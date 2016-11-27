@@ -2,7 +2,12 @@ import {log, msg} from "../mvpaxos/utils/Logging";
 
 export function updateChange(x) {
     return function (state) {
-        if (state==null) [null, log().append(msg("ERRNO013"))]
+        if (state==null) {
+            return [{
+                version: x.version, 
+                value: x.value
+            }, null];
+        }
         if (state.version != x.version) {
             return [state, log().append(msg("ERRNO014"))]
         } else {

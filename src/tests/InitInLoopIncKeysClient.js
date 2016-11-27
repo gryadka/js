@@ -21,18 +21,16 @@ export function curry(fn) {
     }
 }
 
-export function waitAllClientsAsync(clients) {
-    (async () => {
-        try {
-            for (const client of clients) {
-                await client.waitAsync();
-            }
-            console.info("DONE");
-        } catch (e) {
-            console.info("ERROR");
-            console.info(e);
+export async function waitAllClientsAsync(clients) {
+    try {
+        for (const client of clients) {
+            await client.waitAsync();
         }
-    })();
+        console.info("DONE");
+    } catch (e) {
+        console.info("ERROR");
+        console.info(e);
+    }
 }
 
 export function ClusterDriver({cluster, shared, timeVariance}) {

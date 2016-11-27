@@ -13,17 +13,28 @@ if (process.argv.length != 5) {
     process.exit(1);
 }
 
-assertContains({element: process.argv[2], set: CMDS});
-assertContains({element: process.argv[3], set: TESTS});
+runTests(process.argv[3], process.argv[2], process.argv[4])
 
-const test = require(`./${process.argv[3]}/test`).test;
-
-if (process.argv[2]=="record") {
-    test(process.argv[4], new MessageFileLogger(`./tests/${process.argv[3]}/network.log`));
+async function runTests(testName, cmd, seed) {
+    if (testName == "all") {
+        for (const testName of TESTS) {
+            await runTest(testName, cmd, seed)
+        }
+    } else {
+        await runTest(testName, cmd, seed)
+    }
 }
 
-if (process.argv[2]=="replay") {
-    test(process.argv[4], new MessageFileChecker(`./tests/${process.argv[3]}/network.log`));
+async function runTest(testName, cmd, seed) {
+    console.info(`# Running ${testName} (${cmd}) with ${seed} as a seed`);
+    assertContains({element: cmd, set: CMDS});
+    assertContains({element: testName, set: TESTS});
+    const test = require(`./${testName}/test`).test;
+    if (cmd=="record") {
+        await test(seed, new MessageFileLogger(`./tests/${testName}/network.log`));
+    } else if (cmd=="replay") {
+        await test(seed, new MessageFileChecker(`./tests/${testName}/network.log`));
+    }
 }
 
 function assertContains({element, set} = {}) {
@@ -42,7 +53,8 @@ function help() {
     for (const test of TESTS) {
         console.info(`   * ${test}`);
     }
-    
     console.info();
     console.info("  See tests folder for logs");
+    console.info();
+    console.info("  node.js cpunit.js [record|replay] all seed");
 }

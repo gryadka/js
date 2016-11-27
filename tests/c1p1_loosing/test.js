@@ -3,7 +3,7 @@ import {isProposeNoError, isAcceptUnknownError} from "../../src/tests/exceptions
 import {SimulatedCluster} from "../../src/tests/SimulatedCluster"
 import {InitInLoopIncKeysClient, waitAllClientsAsync, ClusterDriver, curry} from "../../src/tests/InitInLoopIncKeysClient"
 
-export function test(seed, logger) {
+export async function test(seed, logger) {
     const keys = ["key1", "key2"];
     
     const system = new SimulatedCluster(seed);
@@ -26,6 +26,7 @@ export function test(seed, logger) {
     })
     
     const c1 = system.spawnOnStart(client({clientId: "c1"}));
-    waitAllClientsAsync([c1]);
+    const exit = waitAllClientsAsync([c1]);
     system.start(logger);
+    await exit;
 }

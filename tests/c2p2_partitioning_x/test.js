@@ -3,7 +3,7 @@ import {isConcurrentNoError, isProposeNoError, isAcceptUnknownError, isLeadershi
 import {SimulatedCluster} from "../../src/tests/SimulatedCluster"
 import {InitInLoopIncKeysClient, waitAllClientsAsync, ClusterDriver, curry} from "../../src/tests/InitInLoopIncKeysClient"
 
-export function test(seed, logger) {
+export async function test(seed, logger) {
     let isPartitioned = false;
     const keys = ["key1", "key2"];
     
@@ -43,6 +43,7 @@ export function test(seed, logger) {
     
     const c1 = system.spawnOnStart(client({clientId: "c1"}));
     const c2 = system.spawnOnStart(client({clientId: "c2"}));
-    waitAllClientsAsync([c1, c2]);
+    const exit = waitAllClientsAsync([c1, c2]);
     system.start(logger);
+    await exit;
 }

@@ -23,14 +23,17 @@ its initial value (seed) so user can replay any test in order to debug an issue.
 1. Clone this repo
 2. cd gryadka
 3. npm install
-4. ./tests/cpunit.sh record network_shuffling seed1
-5. ./tests/cpunit.sh replay network_shuffling seed1
+4. ./run-consistenty-check.sh partitioning/c2p2k2 record seed1
+5. ./run-consistenty-check.sh partitioning/c2p2k2 replay seed1
 
-The 4th command (record) runs the network_shuffling test using seed1 as the seed and record 
-all network messages to tests/network_shuffling/network.log.
+The 4th command (record) runs the partitioning/c2p2k2 test using seed1 as the seed and records 
+all messages between mocked acceptors and proposers to the tests/consistency/scenarios/partitioning/c2p2k2.log log.
 
-The 5th command (replay) also runs the network_shuffling test but beside that it
-checks that the observed network messages match the recorded history to checks that the test's
-behavior indeed depends only on the seed parameter.
+The 5th command (replay) also runs the same test and 
+validates that the observed messages match the recorded history.
+It is usefull to check if a test's behavior depends only on a seed parameter.
 
-Run ./tests/cpunit.sh without arguments to see which tests are supported.
+Use 'all' instead of 'partitioning/c2p2k2' to run all tests. You can use void instead of record or replay
+if you don't want to log the messages.
+
+Run ./run-consistenty-check.sh without arguments to see which tests are supported.

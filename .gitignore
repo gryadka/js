@@ -1,2 +1,4 @@
 node_modules/
-network.log
+.DS_Store
+*.log
+.idea

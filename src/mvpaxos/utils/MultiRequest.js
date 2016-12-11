@@ -1,78 +1,72 @@
 import {log, msg} from "./Logging";
 
-class TransparentPromise {
-    constructor(promise) {
-        this.isResolved = false;
-        this.value = null;
-        this.promise = promise.then(x => {
-            this.value = x;
-            this.isResolved = true;
-            return x;
-        });
-    }
-    then(cont) {
-        return new TransparentPromise(this.promise.then(cont));
-    }
-}
-
-export class MultiRequest {
+export class MultiPromise {
     static fromPromises(promises) {
-        return new MultiRequest(promises.map(x => new TransparentPromise(x.then(y => ({
-            value: y,
-            hasValue: true
-        })))));
-    }
-    
-    static fromCore(core) {
-        return new MultiRequest(core);
-    }
-
-    constructor(core) {
-        this.core = core;
-    }
-
-    // TODO: rename abort to getResolvedValues?
-    abort() {
-        return this.core.filter(x => x.isResolved && x.value.hasValue).map(x => x.value.value);
-    }
-    
-    filter(predicate) {
-        return MultiRequest.fromCore(this.core.map(x => x.then(y => {
-            return y.hasValue && predicate(y.value) ? y : {hasValue: false};
-        })));
-    }
-
-    atLeast(count) {
-        var failed = 0;
-        var resolved = [];
-        var total = this.core.length;
-        var isCalled = false;
-        var result = null;
-        
-        var promise = new Promise(function(resolve, reject) {
-            result = x => {
-                if (!isCalled) {
-                    isCalled = true;
-                    resolve(x);
+        const mp = new MultiPromise(promises.length);
+        for (let promise of promises) {
+            (async function() {
+                try {
+                    mp.emit({ isValid: true, msg: await promise })
+                } catch(e) {
+                    mp.emit({ isValid: false, msg: null });
                 }
-            };
-        });
-
-        this.core.forEach(x => {
-            x.then(y => {
-                if (y.hasValue) {
-                    resolved.push(y.value);
+            })()
+        }
+        return mp;
+    }
+    constructor(expected) {
+        this.expected = expected;
+        this.resolved = [];
+        this.dependents = [];
+    }
+    emit({ isValid, msg }) {
+        this.resolved.push({ isValid, msg });
+        for (let dependent of this.dependents) {
+            dependent({ isValid, msg });
+        }
+    }
+    filter(predicate) {
+        const mp = new MultiPromise(this.expected);
+        const onEvent = ({ isValid, msg }) => { 
+            if (isValid && predicate(msg)) {
+                mp.emit({ isValid, msg });
+            } else {
+                mp.emit({ isValid: false, msg: null });
+            }  
+        };
+        this.dependents.push(onEvent);
+        for (let event of this.resolved) {
+            onEvent(event);
+        }
+        return mp;
+    }
+    atLeast(count) {
+        return new Promise((resolve, _) => {
+            const data = [];
+            let failed = 0;
+            let isResolved = false;
+            const onEvent = event => { 
+                if (isResolved) return;
+                if (event.isValid) {
+                    data.push(event.msg);
                 } else {
                     failed += 1;
                 }
-                if (count > total - failed) {
-                    result([null, log().append(msg("ERRNO009"))]);
-                } else if (resolved.length == count) {
-                    result([resolved, null]);
+                if (count > this.expected - failed) {
+                    isResolved = true;
+                    resolve([null, log().append(msg("ERRNO009"))]);
+                } else if (data.length == count) {
+                    isResolved = true;
+                    resolve([data, null]);
                 }
-            });
+            };
+            this.dependents.push(onEvent);
+            for (let event of this.resolved) {
+                onEvent(event);
+            }
         });
-
-        return promise;
+    }
+    abort() {
+        return this.resolved.filter(x => x.isValid).map(x => x.msg);
     }
 }

@@ -1,23 +1,3 @@
-export class Time {
-    constructor(eon, id, updateEon) {
-        this.eon = eon;
-        this.id = id;
-        this.era = 0;
-        this.updateEon = updateEon;
-    }
-    tick() {
-        this.era += 1;
-        return new Tick(this.eon, this.id, this.era); 
-    }
-    fastforward(tick) {
-        this.updateEon(tick.eon + 1).then(eon => {
-            if (this.eon < eon) {
-                this.eon = eon;
-            }
-        });
-    }
-}
-
 export class Tick {
     constructor(eon, id, era) {
         this.eon = eon;

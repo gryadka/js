@@ -73,7 +73,7 @@ export function isLeadershipNoError(e) {
     if (e.status!="NO") return false;
     if (!e.details) return false;
     if (e.details.length!=4) return false;
-    for (const id of ["ERRNO009","ERRNO007","ERRNO006","ERRNO003"]) {
+    for (const id of ["ERRNO009","ERRNO008","ERRNO006","ERRNO003"]) {
         if (!e.details.some(x => x.id==id)) return false;
     }
     return true;
@@ -84,7 +84,7 @@ export function isLeadershipUnknownError(e) {
     if (e.status!="UNKNOWN") return false;
     if (!e.details) return false;
     if (e.details.length!=3) return false;
-    for (const id of ["ERRNO009","ERRNO007","ERRNO004"]) {
+    for (const id of ["ERRNO009","ERRNO008","ERRNO004"]) {
         if (!e.details.some(x => x.id==id)) return false;
     }
     return true;

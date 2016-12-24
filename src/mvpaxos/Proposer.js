@@ -46,18 +46,11 @@ export default class Proposer {
 
     async _await(key, resp, filter, atLeast) {
         const [ok, err] = await (resp.filter(x => filter(x)).atLeast(atLeast));
-        var hasConflicts = false; 
         for (const x of resp.abort().filter(x => x.msg.isConflict)) {
             this.cache.fastforward(key, x.msg.tick);
-            hasConflicts = true;
-        }
-        if (hasConflicts) {
             this.cache.lostLeadership(key);
         }
-        if (err && hasConflicts) {
-            this.cache.lostLeadership(key);
-            return [null, err.append(msg("ERRNO007"))];
-        } else if (err) {
+        if (err) {
             this.cache.lostLeadership(key);
             return [null, err.append(msg("ERRNO008"))];
         }

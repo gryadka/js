@@ -62,15 +62,19 @@ export async function test({seed, logger, intensity=null}) {
         c2.raise(e);
     });
 
-    await c1.wait(x => x.stat.writes >= 30);
-    await c2.wait(x => x.stat.writes >= 30);
-    hasNetworkIssues = true;
-    await c1.wait(x => x.stat.writes >= 170);
-    await c2.wait(x => x.stat.writes >= 170);
-    hasNetworkIssues = false;
-    await c1.wait(x => x.stat.writes >= intensity);
-    await c2.wait(x => x.stat.writes >= intensity);
-    
+    while (true) {
+        hasNetworkIssues = !hasNetworkIssues;
+        const c1written = c1.stat.writes;
+        const c2written = c1.stat.writes;
+        await Promise.all([
+            c1.wait(x => x.stat.writes >= c1written + ctx.random.next(4)),
+            c2.wait(x => x.stat.writes >= c2written + ctx.random.next(4))
+        ]);
+        if (c1.stat.writes >= intensity && c2.stat.writes >= intensity) {
+            break;
+        }
+    }
+
     await c1.stop();
     await c2.stop();
     

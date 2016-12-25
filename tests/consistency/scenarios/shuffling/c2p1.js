@@ -27,8 +27,7 @@ export async function test(seed, logger) {
             acceptors: acceptors,
             network: network,
             beingIntroduced: new Set([])
-        },
-        isLeaderless: false
+        }
     });
 
     const checker = new IncConsistencyChecker();

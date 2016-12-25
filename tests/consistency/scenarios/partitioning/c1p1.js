@@ -34,8 +34,7 @@ export async function test(seed, logger) {
             acceptors: acceptors,
             network: network,
             beingIntroduced: new Set([])
-        },
-        isLeaderless: false
+        }
     });
 
     const c1 = IncClient.spawn({

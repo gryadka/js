@@ -8,11 +8,10 @@ const NO = typedRespondAbstractFactory("NO");
 const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
 
 export default class Proposer {
-    constructor(cache, acceptors, quorum, isLeaderless) {
+    constructor(cache, acceptors, quorum) {
         this.cache = cache;
         this.acceptors = acceptors;
         this.quorum = quorum;
-        this.isLeaderless = isLeaderless;
     }
 
     async changeQuery(key, change, query, extra) {
@@ -45,7 +44,7 @@ export default class Proposer {
 
     async guessValue(key, extra) {
         const tick = this.cache.tick(key).asJSON();
-        if (this.isLeaderless || !this.cache.isLeader(key)) {
+        if (!this.cache.isLeader(key)) {
             const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.prepare(key, tick, extra)));
             const successful = x => x.msg.isPrepared && !x.acceptor.shouldIgnore;
             const [ok, err] = await (resp.filter(successful).atLeast(this.quorum.read));

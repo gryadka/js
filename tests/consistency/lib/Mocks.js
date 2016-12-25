@@ -3,11 +3,11 @@ import Cache from "../../../src/mvpaxos/Cache";
 import {Time} from "../../../src/mvpaxos/Time";
 import Proposer from "../../../src/mvpaxos/Proposer";
 
-export function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null, isLeaderless=false}) {
+export function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null}) {
     acceptorClients = createAcceptorClients(Object.assign({}, acceptorClients, { pid: pid }));
     
     const cache = new Cache(pidtime);
-    const proposer = new Proposer(cache, acceptorClients, quorum, isLeaderless);
+    const proposer = new Proposer(cache, acceptorClients, quorum);
     
     return proposer;
 }

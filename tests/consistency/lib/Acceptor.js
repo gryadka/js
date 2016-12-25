@@ -107,7 +107,7 @@ export class AcceptorMock {
         
         if (info.promise.compareTo(tick) < 0) {
             info.promise = tick;
-            return { isPrepared: true, tick: info.ballot.asJSON(), state: clone(info.value) };
+            return { isPrepared: true, tick: info.ballot.asJSON(), value: clone(info.value) };
         } else {
             return { isConflict: true, tick: info.promise.asJSON() };
         }

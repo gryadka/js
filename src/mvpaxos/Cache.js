@@ -43,14 +43,14 @@ export default class Cache {
     isLeader(key) {
         return this._getSlice(key).isLeader;
     }
-    getState(key) {
+    getValue(key) {
         const slice = this._getSlice(key);
         if (!slice.isLeader) {
             throw new Error("Arrrr");
         };
         return slice.state;
     }
-    updateState(key, state) {
+    updateValue(key, state) {
         const slice = this._getSlice(key);
         slice.state = state;
     }

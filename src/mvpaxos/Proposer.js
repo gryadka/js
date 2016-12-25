@@ -1,6 +1,8 @@
 import {MultiPromise} from "./utils/MultiRequest";
 import {log, msg} from "./utils/Logging";
 
+const typedRespondAbstractFactory = respondType => details => ({ "status": respondType, "details": details });
+
 const OK = typedRespondAbstractFactory("OK");
 const NO = typedRespondAbstractFactory("NO");
 const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
@@ -17,37 +19,55 @@ export default class Proposer {
         if (!this.cache.tryLock(key)) {
             return NO(log().append(msg("ERRNO002")).core);
         }
-        let tick = null;
+        try {
+            const [[tick, curr], err1] = await this.guessValue(key, extra);
+            if (err1) {
+                return NO(err1.core);
+            }
+            
+            const [next, err2] = change(curr);
+
+            const [ok, err3] = await this.accept(key, tick, next, extra);
+            if (err3) {
+                return UNKNOWN(err3.append(msg("ERRNO008")).append(msg("ERRNO004")).core);
+            }
+            
+            this.cache.updateValue(key, next);
+            if (err2) {
+                return NO(err2.append(msg("ERRNO005")).core);
+            }
+            
+            return OK(query(next));
+        } finally {
+            this.cache.unlock(key);
+        }
+    }
+
+    async guessValue(key, extra) {
+        const tick = this.cache.tick(key).asJSON();
         if (this.isLeaderless || !this.cache.isLeader(key)) {
-            tick = this.cache.tick(key).asJSON();
             const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.prepare(key, tick, extra)));
             const successful = x => x.msg.isPrepared && !x.acceptor.shouldIgnore;
             const [ok, err] = await (resp.filter(successful).atLeast(this.quorum.read));
             if (err) {
-                this.cache.unlock(key);
-                return NO(err.append(msg("ERRNO008")).append(msg("ERRNO006")).append(msg("ERRNO003")).core);
+                return [[null, null], err.append(msg("ERRNO008")).append(msg("ERRNO006")).append(msg("ERRNO003"))];
             }
-            this.cache.becomeLeader(key, max(ok, x => x.msg.tick).msg.state);
+            const value = max(ok, x => x.msg.tick).msg.value;
+            this.cache.becomeLeader(key, value);
+            return [[tick, value], null];
         } else {
-            tick = this.cache.tick(key).asJSON();
+            return [[tick, this.cache.getValue(key)], null];
         }
-        const [state, err2] = change(this.cache.getState(key));
-        const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.accept(key, tick, state, extra)));
-        
+    }
+
+    async accept(key, tick, next, extra) {
+        const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.accept(key, tick, next, extra)));
         const [ok, err3] = await (resp.filter(x => x.msg.isOk).atLeast(this.quorum.write));
         for (const x of resp.abort().filter(x => x.msg.isConflict)) {
             this.cache.fastforward(key, x.msg.tick);
             this.cache.lostLeadership(key);
         }
-        
-        this.cache.unlock(key);
-        if (err3) {
-            return UNKNOWN(err3.append(msg("ERRNO008")).append(msg("ERRNO004")).core);
-        }
-        
-        this.cache.updateState(key, state);
-        if (err2) return NO(err2.append(msg("ERRNO005")).core);
-        return OK(query(state));
+        return [ok, err3];
     }
 }
 
@@ -55,8 +75,4 @@ function max(iterable, selector) {
     return iterable.reduce((acc,e) => {
         return selector(acc).compareTo(selector(e)) < 0 ? e : acc
     }, iterable[0]);
-}
-
-function typedRespondAbstractFactory(respondType) {
-    return details => ({ "status": respondType, "details": details }); 
 }

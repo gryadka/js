@@ -48,13 +48,17 @@ export async function test({seed, logger, intensity=null}) {
     ctx.timer.start();
 
     logger.onError(x => c1.raise(x));
+    
+    while (true) {
+        isIgnoringA0 = !isIgnoringA0;
+        const written = c1.stat.writes;
+        await c1.wait(x => x.stat.writes >= written + ctx.random.next(4));
+        if (c1.stat.writes >= intensity) {
+            break;
+        }
+    }
 
-    await c1.wait(x => x.stat.writes >= 30);
-    isIgnoringA0 = true;
-    await c1.wait(x => x.stat.writes >= 170);
-    isIgnoringA0 = false;
     await c1.wait(x => x.stat.writes >= intensity);
-
     await c1.stop();
     await ctx.timer.thread;
 }

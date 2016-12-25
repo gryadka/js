@@ -12,7 +12,7 @@ import {LoggingProxy} from "../../lib/proxies/LoggingProxy"
 
 const MAX_TIME_DELAY = 1000;
 
-export async function test(seed, logger) {
+export async function test({seed, logger, intensity=null}) {
     const ctx = new Context(MAX_TIME_DELAY, seed);
 
     const network = Proxy.chain(

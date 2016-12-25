@@ -11,7 +11,8 @@ import {LoggingProxy} from "../../lib/proxies/LoggingProxy"
 
 const MAX_TIME_DELAY = 1000;
 
-export async function test(seed, logger) {
+export async function test({seed, logger, intensity=null}) {
+    intensity = intensity || 200;
     const ctx = new Context(MAX_TIME_DELAY, seed);
 
     const network = Proxy.chain(
@@ -49,8 +50,8 @@ export async function test(seed, logger) {
         c2.raise(e);
     });
 
-    await c1.wait(x => x.stat.writes >= 200);
-    await c2.wait(x => x.stat.writes >= 200);
+    await c1.wait(x => x.stat.writes >= intensity);
+    await c2.wait(x => x.stat.writes >= intensity);
     await c1.stop();
     await c2.stop();
     await ctx.timer.thread;

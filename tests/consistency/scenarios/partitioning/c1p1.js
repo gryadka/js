@@ -12,7 +12,9 @@ import {FilteringProxy} from "../../lib/proxies/FilteringProxy"
 
 const MAX_TIME_DELAY = 1000;
 
-export async function test(seed, logger) {
+export async function test({seed, logger, intensity=null}) {
+    intensity = intensity || 200;
+    intensity = Math.max(intensity, 200);
     const ctx = new Context(MAX_TIME_DELAY, seed);
 
     let isIgnoringA0 = false;
@@ -47,11 +49,11 @@ export async function test(seed, logger) {
 
     logger.onError(x => c1.raise(x));
 
-    await c1.wait(x => x.stat.writes == 30);
+    await c1.wait(x => x.stat.writes >= 30);
     isIgnoringA0 = true;
-    await c1.wait(x => x.stat.writes == 170);
+    await c1.wait(x => x.stat.writes >= 170);
     isIgnoringA0 = false;
-    await c1.wait(x => x.stat.writes == 200);
+    await c1.wait(x => x.stat.writes >= intensity);
 
     await c1.stop();
     await ctx.timer.thread;

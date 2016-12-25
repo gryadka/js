@@ -13,7 +13,9 @@ import {FilteringProxy} from "../../lib/proxies/FilteringProxy"
 
 const MAX_TIME_DELAY = 1000;
 
-export async function test(seed, logger) {
+export async function test({seed, logger, intensity=null}) {
+    intensity = intensity || 200;
+    intensity = Math.max(intensity, 200);
     const ctx = new Context(MAX_TIME_DELAY, seed);
 
     let hasNetworkIssues = false;
@@ -66,8 +68,8 @@ export async function test(seed, logger) {
     await c1.wait(x => x.stat.writes >= 170);
     await c2.wait(x => x.stat.writes >= 170);
     hasNetworkIssues = false;
-    await c1.wait(x => x.stat.writes >= 200);
-    await c2.wait(x => x.stat.writes >= 200);
+    await c1.wait(x => x.stat.writes >= intensity);
+    await c2.wait(x => x.stat.writes >= intensity);
     
     await c1.stop();
     await c2.stop();

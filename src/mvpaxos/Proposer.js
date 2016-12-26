@@ -28,7 +28,7 @@ export default class Proposer {
 
             const [ok, err3] = await this.accept(key, tick, next, extra);
             if (err3) {
-                return UNKNOWN(err3.append(msg("ERRNO008")).append(msg("ERRNO004")).core);
+                return UNKNOWN(err3.append(msg("ERRNO004")).core);
             }
             
             this.cache.updateValue(key, next);
@@ -49,7 +49,7 @@ export default class Proposer {
             const successful = x => x.msg.isPrepared && !x.acceptor.isBeingIntroduce;
             const [ok, err] = await (resp.filter(successful).atLeast(this.quorum.read));
             if (err) {
-                return [[null, null], err.append(msg("ERRNO008")).append(msg("ERRNO006")).append(msg("ERRNO003"))];
+                return [[null, null], err.append(msg("ERRNO003"))];
             }
             const value = max(ok, x => x.msg.tick).msg.value;
             this.cache.becomeLeader(key, value);

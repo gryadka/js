@@ -5,8 +5,8 @@ export default class AcceptorClient {
     constructor(settings) {
         this.settings = settings;
     }
-    get shouldIgnore() {
-        return this.settings.shouldIgnore
+    get isBeingIntroduce() {
+        return this.settings.isBeingIntroduce
     }
     start() {
         this.redis = redisAsyncClient(this.settings.storage.port, this.settings.storage.host);

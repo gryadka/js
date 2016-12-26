@@ -6,12 +6,11 @@ function clone(obj) {
 }
 
 export class AcceptorClientMock {
-    // TODO: rename shouldIgnore to isBeingIntroduce
-    constructor(aid, pid, service, shouldIgnore) {
+    constructor(aid, pid, service, isBeingIntroduce) {
         this.aid = aid;
         this.pid = pid;
         this.service = service;
-        this.shouldIgnore = shouldIgnore;
+        this.isBeingIntroduce = isBeingIntroduce;
     }
     
     async prepare(key, tick, extra) {

@@ -46,7 +46,7 @@ export default class Proposer {
         const tick = this.cache.tick(key).asJSON();
         if (!this.cache.isLeader(key)) {
             const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.prepare(key, tick, extra)));
-            const successful = x => x.msg.isPrepared && !x.acceptor.shouldIgnore;
+            const successful = x => x.msg.isPrepared && !x.acceptor.isBeingIntroduce;
             const [ok, err] = await (resp.filter(successful).atLeast(this.quorum.read));
             if (err) {
                 return [[null, null], err.append(msg("ERRNO008")).append(msg("ERRNO006")).append(msg("ERRNO003"))];

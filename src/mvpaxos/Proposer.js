@@ -46,12 +46,14 @@ export default class Proposer {
         const tick = this.cache.tick(key).asJSON();
         if (!this.cache.isLeader(key)) {
             const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.prepare(key, tick, extra)));
-            const successful = x => x.msg.isPrepared && !x.acceptor.isBeingIntroduce;
-            const [ok, err] = await (resp.filter(successful).atLeast(this.quorum.read));
+            const [ok, err] = await (resp.filter(x => x.msg.isPrepared).atLeast(this.quorum.read));
             if (err) {
+                for (const x of resp.abort().filter(x => x.msg.isConflict)) {
+                    this.cache.fastforward(key, x.msg.tick);
+                }
                 return [[null, null], err.append(msg("ERRNO003"))];
             }
-            const value = max(ok, x => x.msg.tick).msg.value;
+            const value = max(ok.filter(x => !x.acceptor.isBeingIntroduce), x => x.msg.tick).msg.value;
             this.cache.becomeLeader(key, value);
             return [[tick, value], null];
         } else {

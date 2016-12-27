@@ -6,7 +6,8 @@ import {Void} from "./consistency/lib/logging/Void"
 const CMDS = ["record", "replay", "reduce", "void"];
 const TESTS = [
     "loosing/c1p1", "shuffling/c1p1", "loosing/c2p2k1.i", "shuffling/c1p2", "partitioning/c1p1",
-    "shuffling/c2p1", "shuffling/c2p2k1", "loosing/c2p2k2", "partitioning/c2p2k2"
+    "shuffling/c2p1", "shuffling/c2p2k1", "loosing/c2p2k2", "partitioning/c2p2k2",
+    "membership/c2p2.a3.a4"
 ];
 
 if (process.argv.length < 5) {

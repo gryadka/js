@@ -16,6 +16,7 @@ export class IncClient {
         this.proposers = [];
         this.isActive = false;
         this.conditions = new Set();
+        this.preLoopActions = [];
         this.error = null;
         this.stat = {
             tries: 0,
@@ -24,14 +25,13 @@ export class IncClient {
         this.thread = null;
         this.recoverableErrors = recoverableErrors;
     }
-    addProposer(proposer) {
-        this.proposers.push(proposer);
-    }
     async start() {
         try {
+            let prev_proposers = null;
             this.isActive = true;
             while (this.isActive) {
                 await loopOnError(this.ctx, async () => {
+                    this.onLoopStarted();
                     const proposer = this.ctx.random.anyOf(this.proposers);
                     const key = this.ctx.random.anyOf(this.keys);
                     await retryOnError(this.ctx, async () => {
@@ -85,6 +85,26 @@ export class IncClient {
                 });
             }
         });
+    }
+    onidle(f) {
+        return new Promise((resolve, reject) => {
+            this.preLoopActions.push({
+                f: f,
+                resolve: resolve,
+                reject: reject
+            });
+        });
+    }
+    onLoopStarted() {
+        for (let preaction of this.preLoopActions) {
+            try {
+                preaction.f(this);
+                preaction.resolve(true);
+            } catch (e) {
+                preaction.reject(e);
+            }
+        }
+        this.preLoopActions = []
     }
     onIterationStarted() {
         let executed = new Set();
@@ -161,7 +181,7 @@ class ValueTx {
     }
 }
 
-function unwrapOk(obj) {
+export function unwrapOk(obj) {
     if (obj.status=="OK") {
         return obj.details;
     } else {

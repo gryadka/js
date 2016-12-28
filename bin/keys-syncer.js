@@ -1,5 +1,4 @@
 import Cache from "../src/mvpaxos/Cache";
-import {Time} from "../src/mvpaxos/Time";
 import AcceptorClient from "../src/mvpaxos/AcceptorClient";
 import Proposer from "../src/mvpaxos/Proposer";
 import redisAsyncClient from "../src/mvpaxos/utils/redisAsyncClient";

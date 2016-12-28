@@ -11,18 +11,13 @@ class Syncer {
     async start(settings) {
         const eonKey = settings.storage.prefix + "/eon";
         this.redis = redisAsyncClient(settings.storage.port, settings.storage.host);
-        var eon = await this.redis.incrAsync(eonKey);
 
-        console.info("started, eon: " + eon);
-        const cache = new Cache();
-        const time = new Time(eon, settings.id, eon => {
-            return this.redis.evalshaAsync(settings.storage.fastforward, 2, eonKey, eon);
-        });
+        const cache = new Cache(settings.id);
 
         this.acceptors = settings.acceptors.map(x => new AcceptorClient(x));
         this.acceptors.forEach(x => x.start());
 
-        this.proposer = new Proposer(settings.id, cache, this.acceptors, time, settings.quorum, false);
+        this.proposer = new Proposer(cache, this.acceptors, settings.quorum);
 
         return this;
     }

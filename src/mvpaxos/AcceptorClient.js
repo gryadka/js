@@ -13,9 +13,8 @@ export default class AcceptorClient {
     }
     close() {
         this.redis.quit();
-    }
-    // todo: proposerId 
-    prepare(proposerId, key, tick, extra) {
+    } 
+    prepare(key, tick, extra) {
         return this.redis.evalshaAsync(this.settings.prepare, 2, this.settings.storage.prefix + "/" + key, str_tick(tick)).then(reply => {
             const tick = parse_tick(reply[1]);
             if (reply[0] === "ok") {
@@ -25,8 +24,7 @@ export default class AcceptorClient {
             }
         }).catch(err => respond(this, {isError: true}));
     }
-    // todo: proposerId
-    accept(proposerId, key, tick, state, extra) {
+    accept(key, tick, state, extra) {
         return this.redis.evalshaAsync(this.settings.accept, 3, this.settings.storage.prefix + "/" + key, str_tick(tick), JSON.stringify({"value": state})).then(reply => {
             if (reply[0] === "ok") {
                 return respond(this, { isOk: true});

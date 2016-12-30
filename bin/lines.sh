@@ -23,3 +23,12 @@ find . \
   | xargs wc -l \
 \
   | grep total | awk '{print $1}'
+
+
+find tests \
+\
+  | egrep "\.js$" \
+\
+  | xargs wc -l \
+\
+  | grep total | awk '{print $1}'

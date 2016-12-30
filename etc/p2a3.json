@@ -1,0 +1,23 @@
+{
+    "acceptors": { 
+        "a0": { "port": 6379 },
+        "a1": { "port": 6380 },
+        "a2": { "port": 6381 }
+    },
+    "proposers": {
+        "p0": { 
+            "id": 0,
+            "port": 8079, 
+            "acceptors": ["a0", "a1", "a2"],
+            "quorum": { "read": 2, "write": 2 },
+            "transient": ["a0"]
+        },
+        "p1": {
+            "id": 0,
+            "port": 8079, 
+            "acceptors": ["a0", "a1", "a2"],
+            "quorum": { "read": 2, "write": 2 },
+            "transient": []
+        }
+    }
+}

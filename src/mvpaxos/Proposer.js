@@ -26,7 +26,7 @@ export default class Proposer {
             
             const [next, err2] = change(curr);
 
-            const [ok, err3] = await this.accept(key, tick, next, extra);
+            const [ok, err3] = await this.commitValue(key, tick, next, extra);
             if (err3) {
                 return UNKNOWN(err3.append(msg("ERRNO004")).core);
             }
@@ -61,7 +61,7 @@ export default class Proposer {
         }
     }
 
-    async accept(key, tick, next, extra) {
+    async commitValue(key, tick, next, extra) {
         const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.accept(key, tick, next, extra)));
         const [ok, err3] = await (resp.filter(x => x.msg.isOk).atLeast(this.quorum.write));
         for (const x of resp.abort().filter(x => x.msg.isConflict)) {

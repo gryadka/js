@@ -7,12 +7,7 @@ import redisAsyncClient from "../mvpaxos/utils/redisAsyncClient";
 import express from "express";
 import bodyParser from "body-parser";
 
-export function proposerServiceFactory(settings) {
-    const service = new ProposerService();
-    return service.start(settings);
-}
-
-class ProposerService {
+export class ProposerService {
     async start(settings) {
         const cache = new Cache(settings.id);
         this.acceptors = settings.acceptors.map(x => new AcceptorClient(x));

@@ -15,7 +15,7 @@ network invasions like message dropping and reordering.
 Each test scenario uses seed-able randomization. It means that all test's random decisions are determined by 
 its initial value (seed) so user can replay any test in order to debug an issue. 
 
-#### How to run a test:
+#### How to run consistency tests:
 
 1. Clone this repo
 2. cd gryadka
@@ -34,3 +34,16 @@ Use 'all' instead of 'partitioning/c2p2k2' to run all tests. You can use 'void' 
 if you don't want to log the messages.
 
 Run ./run-consistenty-check.sh without arguments to see which tests are supported.
+
+## System Testing
+
+1. Clone this repo
+2. cd gryadka
+3. npm install
+4. ./bin/pseudo-distribute.sh etc/p2a3.json
+5. redis-server deployment/a0/redis.conf &
+6. redis-server deployment/a1/redis.conf &
+7. redis-server deployment/a2/redis.conf &
+8. ./bin/gryadka.sh deployment/proposers/p0.json &
+9. curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "lisa1a", "change": {"name": "id-change","args": null},"query": {"name": "id-query","args": null}}' http://localhost:8079/change
+

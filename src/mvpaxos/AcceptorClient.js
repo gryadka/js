@@ -18,7 +18,7 @@ export default class AcceptorClient {
         return this.redis.evalshaAsync(this.settings.prepare, 2, key, str_tick(tick)).then(reply => {
             const tick = parse_tick(reply[1]);
             if (reply[0] === "ok") {
-                return respond(this, { isPrepared: true, tick: tick, state: tick.eon==0 ? null : JSON.parse(reply[2]).value });
+                return respond(this, { isPrepared: true, tick: tick, value: tick.eon==0 ? null : JSON.parse(reply[2]).value });
             } else {
                 return respond(this, { isConflict: true, tick: tick });
             }

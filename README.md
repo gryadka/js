@@ -45,5 +45,8 @@ Run ./run-consistenty-check.sh without arguments to see which tests are supporte
 6. redis-server deployment/a1/redis.conf &
 7. redis-server deployment/a2/redis.conf &
 8. ./bin/gryadka.sh deployment/proposers/p0.json &
-9. curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "lisa1a", "change": {"name": "id-change","args": null},"query": {"name": "id-query","args": null}}' http://localhost:8079/change
-
+9. Test a sample key/value storage
+    * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-init","args": "unknown"},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
+    * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-update","args": {"version":0, "value": 42}},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
+    * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-id","args": null},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
+    * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-reset","args": "to pass butter"},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change

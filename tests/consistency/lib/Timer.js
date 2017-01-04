@@ -30,6 +30,13 @@ export class Timer {
     now() { 
         return this.ts;
     }
+
+    async yield() {
+        // to put each while's iteration as a new event in the event loop  
+        await new Promise((reply, reject) => {
+            this.postpone(0, () => reply(null));
+        });
+    }
     
     postpone(delay, action) { 
         if (delay<0) throw new Error();

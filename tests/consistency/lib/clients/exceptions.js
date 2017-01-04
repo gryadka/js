@@ -1,9 +1,7 @@
-export async function loopOnError(ctx, action, errors) {
+export async function loopOnError(timer, action, errors) {
     while (true) {
         // to put each while's iteration as a new event in the event loop  
-        await new Promise((reply, reject) => {
-            ctx.timer.postpone(0, () => reply(null));
-        });
+        await timer.yield();
         try {
             return await action();
         } catch(e) {
@@ -15,12 +13,10 @@ export async function loopOnError(ctx, action, errors) {
     }
 }
 
-export async function retryOnError(ctx, action, errors, times) {
+export async function retryOnError(timer, action, errors, times) {
     while (times > 0) {
         // to put each while's iteration as a new event in the event loop  
-        await new Promise((reply, reject) => {
-            ctx.timer.postpone(0, () => reply(null));
-        });
+        await timer.yield();
         try {
             times--;
             return await action();

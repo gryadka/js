@@ -16,7 +16,6 @@ export class IncClient {
         this.proposers = [];
         this.isActive = false;
         this.conditions = new Set();
-        this.preLoopActions = [];
         this.error = null;
         this.stat = {
             tries: 0,
@@ -29,11 +28,10 @@ export class IncClient {
         try {
             this.isActive = true;
             while (this.isActive) {
-                await loopOnError(this.ctx, async () => {
-                    this.onLoopStarted();
+                await loopOnError(this.ctx.timer, async () => {
                     const proposer = this.ctx.random.anyOf(this.proposers);
                     const key = this.ctx.random.anyOf(this.keys);
-                    await retryOnError(this.ctx, async () => {
+                    await retryOnError(this.ctx.timer, async () => {
                         this.onIterationStarted();
                         this.stat.tries++;
                         
@@ -84,26 +82,6 @@ export class IncClient {
                 });
             }
         });
-    }
-    onidle(f) {
-        return new Promise((resolve, reject) => {
-            this.preLoopActions.push({
-                f: f,
-                resolve: resolve,
-                reject: reject
-            });
-        });
-    }
-    onLoopStarted() {
-        for (let preaction of this.preLoopActions) {
-            try {
-                preaction.f(this);
-                preaction.resolve(true);
-            } catch (e) {
-                preaction.reject(e);
-            }
-        }
-        this.preLoopActions = []
     }
     onIterationStarted() {
         let executed = new Set();

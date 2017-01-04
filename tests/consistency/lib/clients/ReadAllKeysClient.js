@@ -26,9 +26,9 @@ export class ReadAllKeysClient {
     async start() {
         try {
             for (const key of this.keys) {
-                await loopOnError(this.ctx, async () => {
+                await loopOnError(this.ctx.timer, async () => {
                     const proposer = this.ctx.random.anyOf(this.proposers);
-                    await retryOnError(this.ctx, async () => {
+                    await retryOnError(this.ctx.timer, async () => {
                         this.stat.tries++;
                         
                         let tx = this.consistencyChecker.tx(key);

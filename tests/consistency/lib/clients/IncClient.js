@@ -1,5 +1,6 @@
 import {loopOnError, isRetryCountExceedError, retryOnError} from "./exceptions";
 import {initChange, idChange, updateChange, idQuery} from  "../mutators";
+import unwrapOk from "./unwrapOk"
 
 export class IncClient {
     static spawn({ctx, id, proposers, keys, consistencyChecker, recoverableErrors}) {
@@ -97,21 +98,5 @@ export class IncClient {
             }
         }
         this.conditions = new Set([...this.conditions].filter(x => !executed.has(x)));
-    }
-}
-
-
-
-
-
-
-
-
-
-export function unwrapOk(obj) {
-    if (obj.status=="OK") {
-        return obj.details;
-    } else {
-        throw obj;
     }
 }

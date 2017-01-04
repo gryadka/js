@@ -1,6 +1,6 @@
 import {loopOnError, isRetryCountExceedError, retryOnError} from "./exceptions";
 import {initChange, idChange, updateChange, idQuery} from  "../mutators";
-import {unwrapOk} from "./IncClient"
+import unwrapOk from "./unwrapOk"
 
 export class ReadAllKeysClient {
     static spawn({ctx, id, proposers, keys, consistencyChecker, recoverableErrors}) {

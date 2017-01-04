@@ -1,7 +1,8 @@
 import {Context} from "../../lib/Context"
 
 import {createProposer, createAcceptors} from "../../lib/Mocks"
-import {IncClient, IncConsistencyChecker} from "../../lib/clients/IncClient"
+import {IncClient} from "../../lib/clients/IncClient"
+import {IncConsistencyChecker} from "../../lib/clients/IncConsistencyChecker"
 import {isUpdateChangeNoError} from "../../lib/mutators"
 import {isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isLeadershipNoError, isLeadershipUnknownError} from "../../lib/clients/exceptions"
 

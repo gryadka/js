@@ -16,11 +16,23 @@ export function changeQuery(proposerUrl, key, changeName, changeArgs, queryName,
             }, 
             (err, res, body) => {
                 if (!err && res.statusCode == 200) {
-                    resolve(body);
+                    resolve(validate({ proposersReturn: body}));
                 } else {
                     resolve({ "status": "UNKNOWN", "details": [{"id": "ERRNO001"}]});
                 }
             }
         );
     });
+}
+
+const statuses = ["OK", "NO", "UNKNOWN"];
+
+function validate({proposersReturn}) {
+    if (!statuses.includes(proposersReturn.status)) {
+        throw new Error();
+    }
+    return {
+        "status": proposersReturn.status,
+        "details": proposersReturn.details
+    };
 }

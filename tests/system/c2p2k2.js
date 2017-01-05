@@ -2,7 +2,9 @@ import seedrandom from "seedrandom"
 import {Random} from "../consistency/lib/Random"
 import {IncClient} from "./IncClient"
 import {IncConsistencyChecker} from "../consistency/lib/clients/IncConsistencyChecker"
-import {isProposeNoError, isAcceptUnknownError} from "../consistency/lib/clients/exceptions"
+import {isProposeNoError, isAcceptUnknownError, isConcurrentNoError, getErrorChecker} from "../consistency/lib/clients/exceptions"
+
+const isVersionConflict = getErrorChecker("NO", ["ERRNO011", "ERRNO005"])
 
 class Timer {
     yield() {
@@ -30,12 +32,19 @@ class Timer {
 
         const c1 = IncClient.spawn({
             ctx: ctx, proposerUrls: proposerUrls, keys: ["key1", "key2"], 
-            consistencyChecker: checker, recoverableErrors: [isProposeNoError, isAcceptUnknownError]
+            consistencyChecker: checker, recoverableErrors: [isProposeNoError, isAcceptUnknownError, isConcurrentNoError, isVersionConflict]
+        });
+
+        const c2 = IncClient.spawn({
+            ctx: ctx, proposerUrls: proposerUrls, keys: ["key1", "key2"], 
+            consistencyChecker: checker, recoverableErrors: [isProposeNoError, isAcceptUnknownError, isConcurrentNoError, isVersionConflict]
         });
 
         await c1.wait(x => x.stat.writes >= 10);
+        await c2.wait(x => x.stat.writes >= 10);
 
         await c1.stop();
+        await c2.stop();
 
         console.info(":)");
     } catch (e) {

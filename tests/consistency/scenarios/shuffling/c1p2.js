@@ -3,7 +3,7 @@ import {Context} from "../../lib/Context"
 import {createProposer, createAcceptors} from "../../lib/Mocks"
 import {IncClient} from "../../lib/clients/IncClient"
 import {IncConsistencyChecker} from "../../lib/clients/IncConsistencyChecker"
-import {isLeadershipNoError, isLeadershipUnknownError} from "../../lib/clients/exceptions"
+import {isProposeNoError, isAcceptUnknownError} from "../../lib/clients/exceptions"
 
 import {Proxy} from "../../lib/proxies/Proxy"
 import {ShufflingProxy} from "../../lib/proxies/ShufflingProxy"
@@ -39,7 +39,7 @@ export async function test({seed, logger, intensity=null}) {
     const c1 = IncClient.spawn({
         ctx: ctx, id: "c1", proposers: ps, keys: ["key1", "key2"],
         consistencyChecker: new IncConsistencyChecker(), 
-        recoverableErrors: [isLeadershipNoError, isLeadershipUnknownError]
+        recoverableErrors: [isProposeNoError, isAcceptUnknownError]
     });
 
     ctx.timer.start();

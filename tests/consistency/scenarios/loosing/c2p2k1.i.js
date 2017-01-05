@@ -4,7 +4,7 @@ import {createProposer, createAcceptors} from "../../lib/Mocks"
 import {IncClient} from "../../lib/clients/IncClient"
 import {IncConsistencyChecker} from "../../lib/clients/IncConsistencyChecker"
 import {isUpdateChangeNoError} from "../../lib/mutators"
-import {isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isLeadershipNoError, isLeadershipUnknownError} from "../../lib/clients/exceptions"
+import {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} from "../../lib/clients/exceptions"
 
 import {Proxy} from "../../lib/proxies/Proxy"
 import {ShufflingProxy} from "../../lib/proxies/ShufflingProxy"
@@ -37,12 +37,12 @@ export async function test({seed, logger, intensity=null}) {
 
     const c1 = IncClient.spawn({
         ctx: ctx, id: "c1", proposers: ps, keys: ["key1"],
-        consistencyChecker: checker, recoverableErrors: [ isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isLeadershipNoError, isLeadershipUnknownError, isUpdateChangeNoError ]
+        consistencyChecker: checker, recoverableErrors: [ isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isUpdateChangeNoError ]
     });
 
     const c2 = IncClient.spawn({
         ctx: ctx, id: "c2", proposers: ps, keys: ["key1"],
-        consistencyChecker: checker, recoverableErrors: [ isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isLeadershipNoError, isLeadershipUnknownError, isUpdateChangeNoError ]
+        consistencyChecker: checker, recoverableErrors: [ isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isUpdateChangeNoError ]
     });
 
     ctx.timer.start();

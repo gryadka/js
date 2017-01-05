@@ -6,7 +6,7 @@ import {IncConsistencyChecker} from "../../lib/clients/IncConsistencyChecker"
 import {ReadAllKeysClient} from "../../lib/clients/ReadAllKeysClient"
 
 import {isUpdateChangeNoError} from "../../lib/mutators"
-import {isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isLeadershipNoError, isLeadershipUnknownError} from "../../lib/clients/exceptions"
+import {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} from "../../lib/clients/exceptions"
 
 import {Proxy} from "../../lib/proxies/Proxy"
 import {ShufflingProxy} from "../../lib/proxies/ShufflingProxy"
@@ -36,7 +36,7 @@ export async function test({seed, logger, intensity=null}) {
     
     const recoverableErrors = [ 
         isConcurrentNoError, isAcceptUnknownError, isProposeNoError, 
-        isLeadershipNoError, isLeadershipUnknownError, isUpdateChangeNoError 
+        isUpdateChangeNoError 
     ];
 
     const a3s = createAcceptors(ctx, ["a0", "a1", "a2"]);

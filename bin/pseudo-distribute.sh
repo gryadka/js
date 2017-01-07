@@ -2,9 +2,10 @@
 
 set -e
 
-rm -rf deployment/*
+rm -rf deployment
 
-mkdir deployment/proposers
+
+mkdir -p deployment/proposers
 
 ./node_modules/babel-cli/bin/babel-node.js src/deploy/deploy.js $1 acceptors | xargs -n1 -I '{}' mkdir "deployment/{}"
 ./node_modules/babel-cli/bin/babel-node.js src/deploy/deploy.js $1 redis etc/redis.mustache "$(pwd)"

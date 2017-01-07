@@ -72,6 +72,8 @@ function proposer(cluster, deploymentPath) {
         });
     }
 
+
+    console.info(cluster.proposers);
     for (const key of cluster.proposers.keys()) {
         const p = cluster.proposers.get(key);
         const settings = {
@@ -84,7 +86,7 @@ function proposer(cluster, deploymentPath) {
                     prepare: a.prepare,
                     accept: a.accept,
                     storage: {
-                        host: "127.0.0.1",
+                        host: a.host,
                         port: a.port
                     },
                     isBeingIntroduce: p.transient.includes(aid)

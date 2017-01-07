@@ -18,10 +18,6 @@ export function changeQuery(proposerUrl, key, changeName, changeArgs, queryName,
                 if (!err && res.statusCode == 200) {
                     resolve(validate({ proposersReturn: body}));
                 } else {
-                    //console.info(err);
-                    //console.info(res);
-                    console.info(res.statusCode);
-                    console.info(body);
                     resolve({ "status": "UNKNOWN", "details": [{"id": "ERRNO001"}]});
                 }
             }

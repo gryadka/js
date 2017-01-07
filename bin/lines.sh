@@ -1,34 +1,23 @@
 #!/bin/bash
 
-find . \
+find src/mvpaxos \
 \
-  | grep -v git \
-  | grep -v node_modules \
-  | grep -v tests \
-  | grep -v gryadka \
   | egrep "\.(js|lua)$" \
 \
   | xargs wc -l \
 \
-  | grep total | awk '{print $1}'
+  | grep total | awk '{print "Paxos:    " $1}'
 
 
-find . \
-\
-  | grep -v git \
-  | grep -v node_modules \
-  | grep -v tests \
-  | egrep "\.(js|lua)$" \
+find src/gryadka -name *.js \
 \
   | xargs wc -l \
 \
-  | grep total | awk '{print $1}'
+  | grep total | awk '{print "Web API:  " $1}'
 
 
-find tests \
-\
-  | egrep "\.js$" \
+find tests -name *.js  \
 \
   | xargs wc -l \
 \
-  | grep total | awk '{print $1}'
+  | grep total | awk '{print "Tests:   " $1}'

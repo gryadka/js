@@ -14,6 +14,7 @@ export class IncClient {
         this.proposerUrls = proposerUrls;
         this.isActive = false;
         this.conditions = new Set();
+        this.iterationHandlers = [];
         this.error = null;
         this.stat = {
             tries: 0,
@@ -21,6 +22,9 @@ export class IncClient {
         };
         this.keys = keys;
         this.recoverableErrors = recoverableErrors;
+    }
+    onIteration(handler) {
+        this.iterationHandlers.push(handler);
     }
     async start() {
         try {
@@ -90,6 +94,9 @@ export class IncClient {
         });
     }
     onIterationStarted() {
+        for (const handler of this.iterationHandlers) {
+            handler(this);
+        }
         let executed = new Set();
         for (let condition of this.conditions) {
             try {

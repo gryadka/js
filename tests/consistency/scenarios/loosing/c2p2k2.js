@@ -30,7 +30,7 @@ export async function test({seed, logger, intensity=null}) {
         acceptorClients: {
             acceptors: acceptors,
             network: network,
-            beingIntroduced: new Set([])
+            transient: new Set([])
         }
     }));
 

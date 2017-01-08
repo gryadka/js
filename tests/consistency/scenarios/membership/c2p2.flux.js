@@ -35,11 +35,11 @@ class MembershipFlux {
         this.aid = 0;
     }
     
-    mkProposer({ quorum, acceptors, beingIntroduced = [] }) {
+    mkProposer({ quorum, acceptors, transient = [] }) {
         const id = (this.pid++);
         return createProposer({
             pidtime: id, pid: "p"+id, quorum: quorum,
-            acceptorClients: { acceptors: acceptors, network: this.network, beingIntroduced: new Set(beingIntroduced) }
+            acceptorClients: { acceptors: acceptors, network: this.network, transient: new Set(transient) }
         })
     }
 
@@ -82,7 +82,7 @@ class MembershipFlux {
         const p2tr = range(2).map(_ => this.mkProposer({
             quorum: { read: 3, write: 3 }, 
             acceptors: this.acceptors, 
-            beingIntroduced: [acceptor.aid]
+            transient: [acceptor.aid]
         }));
 
         const c2tr = [];
@@ -119,7 +119,7 @@ class MembershipFlux {
         const p2tr = range(2).map(_ => this.mkProposer({
             quorum: { read: 3, write: 3 }, 
             acceptors: this.acceptors, 
-            beingIntroduced: [acceptor.aid]
+            transient: [acceptor.aid]
         }));
 
         this.acceptors = this.acceptors.filter(x => x != acceptor);

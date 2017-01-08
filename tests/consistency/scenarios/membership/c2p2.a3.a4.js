@@ -42,7 +42,7 @@ export async function test({seed, logger, intensity=null}) {
     const a3s = createAcceptors(ctx, ["a0", "a1", "a2"]);
     const p2a3s = Array.from(new Array(2).keys()).map(i => createProposer({
         pidtime: i, pid: "p"+i, quorum: { read: 2, write: 2 },
-        acceptorClients: { acceptors: a3s, network: network, beingIntroduced: new Set([]) }
+        acceptorClients: { acceptors: a3s, network: network, transient: new Set([]) }
     }));
 
     const c1 = IncClient.spawn({
@@ -62,11 +62,10 @@ export async function test({seed, logger, intensity=null}) {
 
     await c2.stop();
 
-    // TODO: replace beingIntroduced with transient
     const a4s = a3s.concat(createAcceptors(ctx, ["a3"]));
     const p2a3a4s = Array.from(new Array(2).keys()).map(i => createProposer({
         pidtime: i+2, pid: "p"+(i+2), quorum: { read: 3, write: 3 },
-        acceptorClients: { acceptors: a4s, network: network, beingIntroduced: new Set(["a3"]) }
+        acceptorClients: { acceptors: a4s, network: network, transient: new Set(["a3"]) }
     }));
 
     const c3 = IncClient.spawn({
@@ -98,7 +97,7 @@ export async function test({seed, logger, intensity=null}) {
 
     const p2a4s = Array.from(new Array(2).keys()).map(i => createProposer({
         pidtime: i+4, pid: "p"+(i+4), quorum: { read: 3, write: 3 },
-        acceptorClients: { acceptors: a4s, network: network, beingIntroduced: new Set([]) }
+        acceptorClients: { acceptors: a4s, network: network, transient: new Set([]) }
     }));
 
     const c5 = IncClient.spawn({

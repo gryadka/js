@@ -16,6 +16,6 @@ export function createAcceptors(ctx, ids) {
     return ids.map(id => new AcceptorMock(ctx, id));
 }
 
-export function createAcceptorClients({pid, network, acceptors, beingIntroduced}) {
-    return acceptors.map(x => x.createClient(pid, network, beingIntroduced.has(x.id)));
+export function createAcceptorClients({pid, network, acceptors, transient}) {
+    return acceptors.map(x => x.createClient(pid, network, transient.has(x.id)));
 }

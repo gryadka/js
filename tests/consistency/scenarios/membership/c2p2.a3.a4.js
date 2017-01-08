@@ -62,6 +62,7 @@ export async function test({seed, logger, intensity=null}) {
 
     await c2.stop();
 
+    // TODO: replace beingIntroduced with transient
     const a4s = a3s.concat(createAcceptors(ctx, ["a3"]));
     const p2a3a4s = Array.from(new Array(2).keys()).map(i => createProposer({
         pidtime: i+2, pid: "p"+(i+2), quorum: { read: 3, write: 3 },

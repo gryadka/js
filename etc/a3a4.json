@@ -47,6 +47,13 @@
             "acceptors": ["a0", "a1", "a2", "a3"],
             "quorum": { "read": 3, "write": 3 },
             "transient": []
+        },
+        "s0": {
+            "id": 6,
+            "port": 8085, 
+            "acceptors": ["a0", "a1", "a2", "a3"],
+            "quorum": { "read": 3, "write": 3 },
+            "transient": []
         }
     }
 }

@@ -17,6 +17,8 @@ its initial value (seed) so user can replay any test in order to debug an issue.
 
 #### How to run consistency tests:
 
+Prerequisites: redis, nodejs
+
 1. Clone this repo
 2. cd gryadka
 3. npm install
@@ -37,6 +39,10 @@ Run ./run-consistenty-check.sh without arguments to see which tests are supporte
 
 ## System Testing
 
+Prerequisites: redis, nodejs
+
+#### Staring a system and using curl to put a value
+
 1. Clone this repo
 2. cd gryadka
 3. npm install
@@ -50,3 +56,36 @@ Run ./run-consistenty-check.sh without arguments to see which tests are supporte
     * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-update","args": {"version":0, "value": 42}},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
     * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-id","args": null},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
     * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-reset","args": "to pass butter"},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
+
+#### Membership change
+
+1. ./bin/pseudo-distribute.sh etc/a3a4.json
+2. redis-server deployment/a0/redis.conf &
+3. redis-server deployment/a1/redis.conf &
+4. redis-server deployment/a2/redis.conf &
+5. ./bin/gryadka.sh deployment/proposers/p0.json &
+6. ./bin/gryadka.sh deployment/proposers/p1.json &
+7. [dashboard] open a new tab and run: ./run-system-check.sh etc/a3a4.json
+8. [dashboard]: "clients: c0,c1"
+9. [dashboard]: "make c0,c1 use p0,p1"
+10. [dashboard]: "start c0,c1"
+11. ./bin/gryadka.sh deployment/proposers/p2.json &
+12. ./bin/gryadka.sh deployment/proposers/p3.json &
+13. [dashboard]: "clients: c2,c3"
+14. [dashboard]: "make c2,c3 use p2,p3"
+15. [dashboard]: "start c2,c3"
+16. [dashboard]: "stop c0,c1"
+17. kill p0 & p1 proposers
+18. ./bin/keys-dumper.sh etc/a3a4.json a0 >> keys1
+19. ./bin/keys-dumper.sh etc/a3a4.json a1 >> keys1
+20. ./bin/keys-dumper.sh etc/a3a4.json a2 >> keys1
+21. cat keys1 | sort | uniq > keys2
+22. ./bin/keys-syncer.sh deployment/proposers/s0.json keys2
+23. ./bin/gryadka.sh deployment/proposers/p4.json &
+24. ./bin/gryadka.sh deployment/proposers/p5.json &
+25. [dashboard]: "clients: c4,c5"
+26. [dashboard]: "make c4,c5 use p4,p5"
+27. [dashboard]: "start c4,c5"
+28. [dashboard]: "stop c2,c3"
+29. kill p2 & p3 proposers
+

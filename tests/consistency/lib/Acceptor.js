@@ -1,4 +1,4 @@
-import {Tick} from "../../../src/mvpaxos/Time";
+import {Tick} from "../../../src/paxos/Time";
 
 // shame: kill me
 function clone(obj) {

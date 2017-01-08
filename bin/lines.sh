@@ -1,6 +1,6 @@
 #!/bin/bash
 
-find src/mvpaxos \
+find src/paxos \
 \
   | egrep "\.(js|lua)$" \
 \

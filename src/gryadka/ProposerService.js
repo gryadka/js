@@ -1,8 +1,8 @@
-import Cache from "../mvpaxos/Cache";
-import {Time} from "../mvpaxos/Time";
-import AcceptorClient from "../mvpaxos/AcceptorClient";
-import Proposer from "../mvpaxos/Proposer";
-import redisAsyncClient from "../mvpaxos/utils/redisAsyncClient";
+import Cache from "../paxos/Cache";
+import {Time} from "../paxos/Time";
+import AcceptorClient from "../paxos/AcceptorClient";
+import Proposer from "../paxos/Proposer";
+import redisAsyncClient from "../paxos/utils/redisAsyncClient";
 
 import express from "express";
 import bodyParser from "body-parser";

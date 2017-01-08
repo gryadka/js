@@ -1,4 +1,4 @@
-import {MultiRequest, MultiPromise} from "../../src/mvpaxos/utils/MultiRequest"
+import {MultiRequest, MultiPromise} from "../../src/paxos/utils/MultiRequest"
 
 async function smokeTest() {
     let p1r = null;

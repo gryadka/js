@@ -1,4 +1,4 @@
-import {log, msg} from "../../mvpaxos/utils/Logging";
+import {log, msg} from "../../paxos/utils/Logging";
 
 module.exports = function (x) {
     return function (state) {

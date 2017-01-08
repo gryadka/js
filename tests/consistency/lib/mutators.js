@@ -1,4 +1,4 @@
-import {log, msg} from "../../../src/mvpaxos/utils/Logging";
+import {log, msg} from "../../../src/paxos/utils/Logging";
 
 export function updateChange(x) {
     return function (state) {

@@ -1,4 +1,4 @@
-import {FailRequestError} from "../../../../src/mvpaxos/utils/MultiRequest"
+import {FailRequestError} from "../../../../src/paxos/utils/MultiRequest"
 
 export class LoosingProxy {
     static w({ctx, stability}) {

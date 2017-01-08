@@ -69,23 +69,23 @@ Prerequisites: redis, nodejs
 8. [dashboard]: "clients: c0,c1"
 9. [dashboard]: "make c0,c1 use p0,p1"
 10. [dashboard]: "start c0,c1"
-11. ./bin/gryadka.sh deployment/proposers/p2.json &
-12. ./bin/gryadka.sh deployment/proposers/p3.json &
-13. [dashboard]: "clients: c2,c3"
-14. [dashboard]: "make c2,c3 use p2,p3"
-15. [dashboard]: "start c2,c3"
-16. [dashboard]: "stop c0,c1"
-17. kill p0 & p1 proposers
-18. ./bin/keys-dumper.sh etc/a3a4.json a0 >> keys1
-19. ./bin/keys-dumper.sh etc/a3a4.json a1 >> keys1
-20. ./bin/keys-dumper.sh etc/a3a4.json a2 >> keys1
-21. cat keys1 | sort | uniq > keys2
-22. ./bin/keys-syncer.sh deployment/proposers/s0.json keys2
-23. ./bin/gryadka.sh deployment/proposers/p4.json &
-24. ./bin/gryadka.sh deployment/proposers/p5.json &
-25. [dashboard]: "clients: c4,c5"
-26. [dashboard]: "make c4,c5 use p4,p5"
-27. [dashboard]: "start c4,c5"
-28. [dashboard]: "stop c2,c3"
-29. kill p2 & p3 proposers
-
+11. redis-server deployment/a3/redis.conf &
+12. ./bin/gryadka.sh deployment/proposers/p2.json &
+13. ./bin/gryadka.sh deployment/proposers/p3.json &
+14. [dashboard]: "clients: c2,c3"
+15. [dashboard]: "make c2,c3 use p2,p3"
+16. [dashboard]: "start c2,c3"
+17. [dashboard]: "stop c0,c1"
+18. kill p0 & p1 proposers
+19. ./bin/keys-dumper.sh etc/a3a4.json a0 >> keys1
+20. ./bin/keys-dumper.sh etc/a3a4.json a1 >> keys1
+21. ./bin/keys-dumper.sh etc/a3a4.json a2 >> keys1
+22. cat keys1 | sort | uniq > keys2
+23. ./bin/keys-syncer.sh deployment/proposers/s0.json keys2
+24. ./bin/gryadka.sh deployment/proposers/p4.json &
+25. ./bin/gryadka.sh deployment/proposers/p5.json &
+26. [dashboard]: "clients: c4,c5"
+27. [dashboard]: "make c4,c5 use p4,p5"
+28. [dashboard]: "start c4,c5"
+29. [dashboard]: "stop c2,c3"
+30. kill p2 & p3 proposers

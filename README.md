@@ -1,23 +1,50 @@
 > THE SYSTEM IS UNDER CONSTRUCTION
 
-Gryadka is a minimalistic layer on top of Redis turning it into a distributed consistent 
+Gryadka is a minimalistic layer on top of multiple instances of Redis working as a distributed consistent 
 key/value storage (CP). Its core has less than 500 lines of code but provides full featured 
 Paxos implementation supporting such advance features as cluster membership change and 
 distinguished proposer optimization.
 
-## Consistency (linearizability) testing
+# FAQ
+
+#### Is it a production ready?
+#### I heard that Raft is simpler than Paxos, why didn't you use it?
+
+# Goal
+
+Paxos is a master-master replication protocol. Its inventor, Leslie Lamport wrote that "it is among the simplest 
+and most obvious of distributed algorithms" [1] but many who tried to implement it run into troubles:
+
+  * "building a production system turned out to be a non-trivial task for a variety of reasons" [2]
+  * "Paxos is by no means a simple protocol, even though it is based on relatively simple invariants" [3]
+  * "we found few people who were comfortable with Paxos, even among seasoned researchers" [4]
+
+This dissonance made me wonder so I challenged myself to write a simple Paxos implementation. I took lines of code as
+a measure of simplicity and set a limit of 500 lines in order to avoid creating a monster of several thousand lines.
+
+# Principles
+
+The main principle of Gryadka is to get rid of everything if it can be implemented on the client side.
+
+#### Transactions
+#### Consistent backups
+#### Leader election 
+
+# API
+
+# Consistency
+
+## Simulated network testing
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
 network invasions like message dropping and reordering.
-
-**TODO:** use dcm-oss/blockade or jepsen to test against real deployment
 
 Each test scenario uses seed-able randomization. It means that all test's random decisions are determined by 
 its initial value (seed) so user can replay any test in order to debug an issue. 
 
 #### How to run consistency tests:
 
-Prerequisites: redis, nodejs
+Prerequisites: nodejs
 
 1. Clone this repo
 2. cd gryadka
@@ -37,7 +64,7 @@ if you don't want to log the messages.
 
 Run ./run-consistenty-check.sh without arguments to see which tests are supported.
 
-## System Testing
+## End-to-end testing
 
 Prerequisites: redis, nodejs
 
@@ -89,3 +116,11 @@ Prerequisites: redis, nodejs
 28. [dashboard]: "start c4,c5"
 29. [dashboard]: "stop c2,c3"
 30. kill p2 & p3 proposers
+
+# Links
+
+[1] "Paxos Made Simple" http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf
+[2] "Paxos Made Live - An Engineering Perspective" https://www.cs.utexas.edu/users/lorenzo/corsi/cs380d/papers/paper2-1.pdf
+[3] "Paxos Made Moderately Complex" http://www.cs.cornell.edu/courses/cs7412/2011sp/paxos.pdf
+[4] "In Search of an Understandable Consensus Algorithm" https://raft.github.io/raft.pdf
+[5] "Consensus, Made Thrive" https://www.cockroachlabs.com/blog/consensus-made-thrive/

@@ -1,18 +1,14 @@
-import Cache from "../src/mvpaxos/Cache";
-import AcceptorClient from "../src/mvpaxos/AcceptorClient";
-import Proposer from "../src/mvpaxos/Proposer";
-import redisAsyncClient from "../src/mvpaxos/utils/redisAsyncClient";
+import Cache from "../Cache";
+import AcceptorClient from "../AcceptorClient";
+import Proposer from "../Proposer";
+import redisAsyncClient from "../utils/redisAsyncClient";
 
 import fs from "fs"
 import readline from "readline"
 
 class Syncer {
     async start(settings) {
-        const eonKey = settings.storage.prefix + "/eon";
-        this.redis = redisAsyncClient(settings.storage.port, settings.storage.host);
-
         const cache = new Cache(settings.id);
-
         this.acceptors = settings.acceptors.map(x => new AcceptorClient(x));
         this.acceptors.forEach(x => x.start());
 
@@ -27,19 +23,18 @@ class Syncer {
 
     close() {
         this.acceptors.forEach(x => x.close());
-        this.redis.quit();
     }
 }
 
 const settings = JSON.parse(fs.readFileSync(process.argv[2]));
 console.info(settings);
 
-var keys = fs.readFileSync(settings.keys).toString().split("\n").filter(x => x != "");
+var keys = fs.readFileSync(process.argv[3]).toString().split("\n").filter(x => x != "");
 
 (async function() {
     var syncer = null;
     try {
-        syncer = await new Syncer().start(settings.syncer);
+        syncer = await new Syncer().start(settings);
         for (const key of keys) {
             while (true) {
                 const result = await syncer.sync(key);

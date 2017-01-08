@@ -9,7 +9,7 @@ find src/paxos \
   | grep total | awk '{print "Paxos:    " $1}'
 
 
-find src/gryadka -name *.js \
+find src/webapi -name *.js \
 \
   | xargs wc -l \
 \

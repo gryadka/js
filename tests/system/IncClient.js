@@ -1,5 +1,5 @@
 import {loopOnError, retryOnError, isRetryCountExceedError} from "../consistency/lib/clients/exceptions";
-import {changeQuery} from "../../src/gryadka/ProposerAPI"
+import {changeQuery} from "../../src/webapi/ProposerAPI"
 import unwrapOk from "../consistency/lib/clients/unwrapOk"
 
 export class IncClient {

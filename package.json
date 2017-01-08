@@ -1,7 +1,7 @@
 {
-  "name": "gryadka2",
+  "name": "gryadka",
   "version": "1.0.0",
-  "description": "A garden bed of reddish",
+  "description": "A minimalistic (<500 lines of code) Paxos layer on top of Redis nodes turning them into a distributed consistent key/value storage",
   "main": "index.js",
   "dependencies": {
     "babel-cli": "6.14.0",

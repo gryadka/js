@@ -7,6 +7,7 @@ import {IncClient} from "./IncClient"
 import {isProposeNoError, isAcceptUnknownError, isConcurrentNoError, getErrorChecker} from "../consistency/lib/clients/exceptions"
 
 const isVersionConflict = getErrorChecker("NO", ["ERRNO011", "ERRNO005"])
+const isTimeouted = getErrorChecker("UNKNOWN", ["ERRNO001"]);
 
 const CLIENT_CMD = /^clients: +([a-z0-9]+ *( *, *[a-z0-9]+ *)*)$/;
 const NAME = /[a-z0-9]+/g;
@@ -46,7 +47,9 @@ class Dashboard {
             const proposerUrls = meta.proposers.map(p => this.cluster.proposers.get(p).url);
             meta.thread = IncClient.spawn({
                 ctx: this.ctx, proposerUrls: proposerUrls, keys: ["key1", "key2"], 
-                consistencyChecker: this.checker, recoverableErrors: [isProposeNoError, isAcceptUnknownError, isConcurrentNoError, isVersionConflict]
+                consistencyChecker: this.checker, recoverableErrors: [
+                    isProposeNoError, isAcceptUnknownError, isConcurrentNoError, isVersionConflict, isTimeouted
+                ]
             });
             meta.info = this.tui.addclient({title: name, isactive: true, tries: 0, writes: 0});
             meta.thread.onIteration(x => {
@@ -106,6 +109,8 @@ class Dashboard {
         await dashboard.start();
         
     } catch (e) {
+        dashboard.tui.log("¯\\_(ツ)_/¯: SORRY");
+        dashboard.tui.log(e);
         console.info("¯\\_(ツ)_/¯: SORRY")
         console.info(e);
         throw e;

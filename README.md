@@ -131,20 +131,14 @@ Prerequisites: nodejs
 1. Clone this repo
 2. cd gryadka
 3. npm install
-4. ./run-consistenty-check.sh partitioning/c2p2k2 record seed1
-5. ./run-consistenty-check.sh partitioning/c2p2k2 replay seed1
+4. ./run-consistenty-check.sh all void seed1
 
-The 4th command (record) runs the partitioning/c2p2k2 test using seed1 as a seed and records 
-all messages between mocked acceptors and proposers to the tests/consistency/scenarios/partitioning/c2p2k2.log log.
+Instead of "void" one can use "record" to record all events fired in the system during a simulation after it. Another
+alternative is "replay" - it executes the tests and compare current events with previously written events (it was
+useful to check determenism of a simulation).
 
-The 5th command (replay) also runs the same test and 
-validates that the observed messages match the recorded history.
-It is usefull to check if a test's behavior depends only on a seed parameter.
-
-Use 'all' instead of 'partitioning/c2p2k2' to run all tests. You can use 'void' instead of 'record' or 'replay'
-if you don't want to log the messages.
-
-Run ./run-consistenty-check.sh without arguments to see which tests are supported.
+It takes time to execute all test cases so run-consistenty-check.sh also support execution of a particular test case: just
+replace "all" with the test's name. Run ./run-consistenty-check.sh without arguments to see which tests are supported.
 
 ## End-to-end testing
 

@@ -5,6 +5,19 @@ key/value storage (CP). Its core has less than 500 lines of code but provides fu
 Paxos implementation supporting such advance features as cluster membership change and 
 distinguished proposer optimization.
 
+# Goal
+
+Paxos is a master-master replication protocol. Its inventor, Leslie Lamport wrote that 
+["it is among the simplest and most obvious of distributed algorithms"](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)
+but many who tried to implement it run into troubles:
+
+  * ["building a production system turned out to be a non-trivial task for a variety of reasons"](https://www.cs.utexas.edu/users/lorenzo/corsi/cs380d/papers/paper2-1.pdf)
+  * ["Paxos is by no means a simple protocol, even though it is based on relatively simple invariants"](http://www.cs.cornell.edu/courses/cs7412/2011sp/paxos.pdf)
+  * ["we found few people who were comfortable with Paxos, even among seasoned researchers"](https://raft.github.io/raft.pdf)
+
+This dissonance made me wonder so I challenged myself to write a simple Paxos implementation. I took lines of code as
+a measure of simplicity and set a limit of 500 lines of code.
+
 # FAQ
 
 #### Is it a production ready?
@@ -35,19 +48,6 @@ with Paxos all the updates happen inplace and you don't need to implement log tr
 
 Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
 enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
-
-# Goal
-
-Paxos is a master-master replication protocol. Its inventor, Leslie Lamport wrote that 
-["it is among the simplest and most obvious of distributed algorithms"](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)
-but many who tried to implement it run into troubles:
-
-  * ["building a production system turned out to be a non-trivial task for a variety of reasons"](https://www.cs.utexas.edu/users/lorenzo/corsi/cs380d/papers/paper2-1.pdf)
-  * ["Paxos is by no means a simple protocol, even though it is based on relatively simple invariants"](http://www.cs.cornell.edu/courses/cs7412/2011sp/paxos.pdf)
-  * ["we found few people who were comfortable with Paxos, even among seasoned researchers"](https://raft.github.io/raft.pdf)
-
-This dissonance made me wonder so I challenged myself to write a simple Paxos implementation. I took lines of code as
-a measure of simplicity and set a limit of 500 lines of code.
 
 # Principles
 
@@ -98,7 +98,7 @@ of concurrent proposers).
 
 So the problem of leader election reduces to the problem how to land most of the user updates to the same
 node. It can be solved on the above layer with [Microsoft Orleans](https://github.com/dotnet/orleans), 
-[Uber RingPop](https://github.com/uber/ringpop-node) or other consistent hashing routing approach.
+[Uber RingPop](https://github.com/uber/ringpop-node) or any other consistent hashing routing approach.
 
 #### Sharding
 

@@ -36,9 +36,9 @@ export class IncClient {
                     await retryOnError(this.ctx.timer, async () => {
                         this.onIterationStarted();
                         this.stat.tries++;
-                        
+
                         let tx = this.consistencyChecker.tx(key);
-                        const read = unwrapOk(await changeQuery(proposerUrl, key, "kv-init", 0, "kv-read", null, 1000));
+                        const read = unwrapOk(await changeQuery(proposerUrl, key, "kv-init", 0, "kv-read", null, 1000, null));
                         tx.seen(read);
 
                         tx = this.consistencyChecker.tx(key);
@@ -49,10 +49,11 @@ export class IncClient {
                             {
                                 version: read.version,
                                 value: read.value + 3
-                            }, 
+                            },
                             "kv-read", 
                             null, 
-                            1000
+                            1000,
+                            null
                         ));
                         tx.seen(write);
                         

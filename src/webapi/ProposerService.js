@@ -25,7 +25,7 @@ export class ProposerService {
             var change = require("./mutators/" + req.body.change.name)(req.body.change.args);
             var query = require("./mutators/" + req.body.query.name)(req.body.query.args);
 
-            proposer.changeQuery(req.body.key, change, query).then(x => {
+            proposer.changeQuery(req.body.key, change, query, req.body.extra).then(x => {
                 res.json(x);
             });
         });

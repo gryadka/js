@@ -1,6 +1,6 @@
 import request from "request";
 
-export function changeQuery(proposerUrl, key, changeName, changeArgs, queryName, queryArgs, timeout) {
+export function changeQuery(proposerUrl, key, changeName, changeArgs, queryName, queryArgs, timeout, extra) {
     return new Promise((resolve, reject) => {
         request(
             {
@@ -8,7 +8,8 @@ export function changeQuery(proposerUrl, key, changeName, changeArgs, queryName,
                 body: {
                     "key": key,
                     "change": { "name": changeName, "args": changeArgs },
-                    "query": { "name": queryName, "args": queryArgs }
+                    "query": { "name": queryName, "args": queryArgs },
+                    "extra": extra
                 },
                 json: true,
                 url: proposerUrl,

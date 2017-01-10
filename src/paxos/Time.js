@@ -9,6 +9,10 @@ export class Tick {
         return new Tick(json[0], json[1], json[2]);
     }
 
+    isZero() {
+        return this.eon == 0 && this.id == 0 && this.era == 0;
+    }
+
     asJSON() {
         return [this.eon, this.id, this.era]
     }

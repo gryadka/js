@@ -1,6 +1,5 @@
 import {AcceptorMock} from "./Acceptor"
 import Cache from "../../../src/paxos/Cache";
-import {Time} from "../../../src/paxos/Time";
 import Proposer from "../../../src/paxos/Proposer";
 
 export function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null}) {

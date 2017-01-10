@@ -1,9 +1,4 @@
-import {Tick} from "../../../src/paxos/Time";
-
-// shame: kill me
-function clone(obj) {
-    return obj == null ? null : JSON.parse(JSON.stringify(obj));
-}
+import {Tick} from "../../../src/paxos/Tick";
 
 export class AcceptorClientMock {
     constructor(aid, pid, service, isBeingIntroduce) {
@@ -17,7 +12,7 @@ export class AcceptorClientMock {
         const response = await AcceptorMock.sendPrepare(this.aid, this.pid, this.service, key, tick, extra);
         return {
             acceptor: this,
-            msg: this.detick(response.response)
+            msg: response.response
         };
     }
 
@@ -25,16 +20,8 @@ export class AcceptorClientMock {
         const response = await AcceptorMock.sendAccept(this.aid, this.pid, this.service, key, tick, state, extra);
         return {
             acceptor: this,
-            msg: this.detick(response.response)
+            msg: response.response
         };
-    }
-
-    detick(response) {
-        let copy = Object.assign({}, response);
-        if (copy.tick) {
-            copy.tick = Tick.fromJSON(copy.tick);
-        }
-        return copy;
     }
 }
 
@@ -92,12 +79,10 @@ export class AcceptorMock {
     }
     
     prepare(key, tick) {
-        tick = Tick.fromJSON(tick);
-
         if (!this.storage.has(key)) {
             this.storage.set(key, {
-                promise: new Tick(0,0,0),
-                ballot: new Tick(0,0,0),
+                promise: Tick.zero(),
+                ballot: Tick.zero(),
                 value: null
             });
         }
@@ -106,19 +91,17 @@ export class AcceptorMock {
         
         if (info.promise.compareTo(tick) < 0) {
             info.promise = tick;
-            return { isPrepared: true, tick: info.ballot.asJSON(), value: clone(info.value) };
+            return { isPrepared: true, tick: info.ballot, value: info.value };
         } else {
-            return { isConflict: true, tick: info.promise.asJSON() };
+            return { isConflict: true, tick: info.promise };
         }
     }
 
     accept(key, tick, state) {
-         tick = Tick.fromJSON(tick);
-
          if (!this.storage.has(key)) {
             this.storage.set(key, {
-                promise: new Tick(0,0,0),
-                ballot: new Tick(0,0,0),
+                promise: Tick.zero(),
+                ballot: Tick.zero(),
                 value: null
             });
         }
@@ -132,7 +115,7 @@ export class AcceptorMock {
             
             return { isOk: true };
         } else {
-            return { isConflict: true, tick: info.promise.asJSON() };
+            return { isConflict: true, tick: info.promise };
         }
     }
 }

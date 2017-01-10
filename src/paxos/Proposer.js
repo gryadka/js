@@ -43,7 +43,7 @@ export default class Proposer {
     }
 
     async guessValue(key, extra) {
-        const tick = this.cache.tick(key).asJSON();
+        const tick = this.cache.tick(key);
         if (!this.cache.isLeader(key)) {
             const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.prepare(key, tick, extra)));
             const [ok, err] = await (resp.filter(x => x.msg.isPrepared).atLeast(this.quorum.read));

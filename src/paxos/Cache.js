@@ -1,4 +1,4 @@
-import {Tick} from "./Time";
+import {Tick} from "./Tick";
 
 export default class Cache {
     constructor(id) {
@@ -9,26 +9,25 @@ export default class Cache {
     
     tick(key) {
         const slice = this._getSlice(key);
-        slice.tick[2] += 1;
-        return new Tick(slice.tick[0], slice.tick[1], slice.tick[2]);
+        slice.tick = slice.tick.tick();
+        return slice.tick;
     }
 
     fastforward(key, tick) {
         const slice = this._getSlice(key);
-        slice.tick[0] = Math.max(slice.tick[0], tick.eon + 1);
+        slice.tick = slice.tick.fastforward(tick);
     }
 
     _getSlice(key) {
         if (!this.data.has(key)) {
             this.data.set(key, {
-                tick: [0, this.id, 0],
+                tick: new Tick(0, this.id, 0),
                 state: null,
                 isLeader: false
             })
         }
         return this.data.get(key);
     }
-
 
     tryLock(key) {
         if (this.locks.has(key)) {

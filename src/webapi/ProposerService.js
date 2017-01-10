@@ -1,5 +1,4 @@
 import Cache from "../paxos/Cache";
-import {Time} from "../paxos/Time";
 import AcceptorClient from "../paxos/AcceptorClient";
 import Proposer from "../paxos/Proposer";
 import redisAsyncClient from "../paxos/utils/redisAsyncClient";

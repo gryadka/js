@@ -53,7 +53,7 @@ export default class Proposer {
                 }
                 return [[null, null], err.append(msg("ERRNO003"))];
             }
-            const value = max(ok.filter(x => !x.acceptor.isBeingIntroduce), x => x.msg.tick).msg.value;
+            const value = max(ok.filter(x => !x.acceptor.isTransient), x => x.msg.tick).msg.value;
             this.cache.becomeLeader(key, value);
             return [[tick, value], null];
         } else {

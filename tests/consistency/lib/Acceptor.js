@@ -1,11 +1,11 @@
 import {Tick} from "../../../src/paxos/Tick";
 
 export class AcceptorClientMock {
-    constructor(aid, pid, service, isBeingIntroduce) {
+    constructor(aid, pid, service, isTransient) {
         this.aid = aid;
         this.pid = pid;
         this.service = service;
-        this.isBeingIntroduce = isBeingIntroduce;
+        this.isTransient = isTransient;
     }
     
     async prepare(key, tick, extra) {
@@ -59,8 +59,8 @@ export class AcceptorMock {
         return service.handler(outgoing);
     }
 
-    createClient(pid, serviceWrapper, isBeingIntroduce) {
-        return new AcceptorClientMock(this.aid, pid, serviceWrapper(this), isBeingIntroduce);
+    createClient(pid, serviceWrapper, isTransient) {
+        return new AcceptorClientMock(this.aid, pid, serviceWrapper(this), isTransient);
     }
 
     handler(request) {

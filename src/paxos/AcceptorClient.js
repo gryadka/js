@@ -4,9 +4,7 @@ import redisAsyncClient from "./utils/redisAsyncClient";
 export default class AcceptorClient {
     constructor(settings) {
         this.settings = settings;
-    }
-    get isBeingIntroduce() {
-        return this.settings.isBeingIntroduce
+        this.isTransient = this.settings.isTransient
     }
     start() {
         this.redis = redisAsyncClient(this.settings.storage.port, this.settings.storage.host);

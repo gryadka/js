@@ -89,7 +89,7 @@ function proposer(cluster, deploymentPath) {
                         host: a.host,
                         port: a.port
                     },
-                    isBeingIntroduce: p.transient.includes(aid)
+                    isTransient: p.transient.includes(aid)
                 };
             })
         };

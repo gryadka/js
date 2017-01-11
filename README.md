@@ -49,10 +49,10 @@ with Paxos all the updates happen inplace and you don't need to implement log tr
 Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
 enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
 
-# Principles
+# Design principle
 
-The main principle of Gryadka is to get rid of everything if it isn't essential to the replication and if it can be 
-implemented on the client side. A lot of things which look essential to replication actually can be implemented as 
+The main principle of Gryadka is **to get rid of everything if it isn't essential to the replication and if it can be 
+implemented on the client side**. A lot of things which look essential to replication actually can be implemented as 
 an above layer. Among them are transactions, sharding, consistent backup and leader election.  
 
 #### Transactions
@@ -67,7 +67,7 @@ levels from Read Committed to Serializable. Among them are:
  * ["How CockroachDB Does Distributed, Atomic Transactions"](https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/) by CockroachLabs
  * ["Perform Two Phase Commit"](https://docs.mongodb.com/manual/tutorial/perform-two-phase-commits/) by MongoDB
 
-It might be useful to take a look on ["Visualization of RAMP transactions"](http://rystsov.info/2016/04/07/ramp.html) and
+It might be useful also to take a look on ["Visualization of RAMP transactions"](http://rystsov.info/2016/04/07/ramp.html) and
 ["Visualization of serializable cross shard client-side transactions"](http://rystsov.info/2016/03/02/cross-shard-txs.html). 
 
 #### Consistent backups
@@ -113,6 +113,82 @@ switch to the new key/space topology then it's safe to drop the tombstoned key/v
 So sharding can be also pushed to the client side.
 
 # API
+
+Gryadka's core interface is trivial. It's a `changeQuery` function which takes three arguments:
+  
+  * a `key`
+  * a `change` function
+  * a `query` function
+
+Internally `changeQuery` gets a value associated with the `key`, applies `change` to calculate a new value, 
+saves it back and returns `query` applied to that new value.
+
+The pseudo-code:
+
+```
+class Paxos {
+  constuctor() {
+    this.storage = ...;
+  }
+  changeQuery(key, change, query) {
+    const value = change(this.storage.get(key));
+    this.storage.set(key, value);
+    return query(value);
+  }
+}
+```
+
+By choosing the appropriate change/query functions it's possible to customize Gryadka to fulfill different tasks. 
+A "last write win" key/value could be implemented as:
+
+```
+class LWWKeyValue {
+  constuctor(paxos) {
+    this.paxos = paxos;
+  }
+  read(key) {
+    return this.paxos.changeQuery(key, x => x, x => x);
+  }
+  write(key, value) {
+    return this.paxos.changeQuery(key, x => value, x => x);
+  }
+}
+```
+
+A key/value storage with compare-and-set support may look like:
+
+```
+class CASKeyValue {
+  constuctor(paxos) {
+    this.paxos = paxos;
+  }
+  read(key) {
+    return this.paxos.changeQuery(key, x => x==null ? { ver: 0, val: null}, x => x);
+  }
+  write(key, ver, val) {
+    return this.paxos.changeQuery(key, x => {
+      if (x.ver != ver) throw new Error();
+      return { ver: ver+1, val: val };
+    }, x => x);
+  }
+}
+```
+
+## Network
+
+Gryadka exposes its api via an HTTP interface. It's problematic to pass functions via the network therefore
+users should put functions on the server and pass names of the functions instead of them. See the `src/webapi/mutators`
+folder.
+
+The system is distributed and homogeneous so it has several endpoints and all of them are equal. A user can choose any of them
+to invoke the `changeQuery` api; however if all the requests affecting the same `key` land on the same endpoint then
+the distinguished proposer optimization kicks in and the requests run twice faster.
+
+Gryadka is based on remote interactions which significantly differ from local interactions - instead of having two possible 
+outcomes of an operation it has three: 'success', 'failure' and 'unknown'. The latter may be returned when an operation timeouts
+and the true outcome is unknown.
+
+The result of `changeQuery` reflects all those possibilities.
 
 # Consistency
 

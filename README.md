@@ -86,7 +86,7 @@ storage is only used to keep actor's state then it's possible to use [Lai–Yang
 and [Mattern's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book).  
 
 Alternatively if the system isn't based on the actor model then it's possible to integrate snapshotting with
-transactions by denying transactions if its keys were backuped in different snapshots.  
+transactions by denying transactions if its keys were backed up in different snapshots.
 
 #### Leader election
 
@@ -116,13 +116,34 @@ So sharding can be also pushed to the client side.
 
 # Consistency
 
+A consistent system is one that does not contain a contradiction. Contradictions happen when a system breaks its
+promises. Different storages provide different promises so there are different types of consistency:
+eventual, weak, causal, strong and others.
+
+Gryadka supports linearizability (a promise) so it is a strongly consistent data storage (of course if it holds 
+its promise).
+
+Intuitively, linearizability is very close to thread safety: a system of a linearizable key/value storage and its
+clients behaves the same way as a thread safe hashtable and a set of threads working with it. The only difference is
+that a linearizable key/value storage usually is replicated and tolerates network issues and node's crushes without
+violating the consistency guarantees.
+
+It isn't easy to keep promises, for example Kyle Kingsbury demonstrates in [his research](https://aphyr.com/tags/jepsen) 
+that many commercial data storages had consistency issues, among them were: 
+[VoltDB](https://aphyr.com/posts/331-jepsen-voltdb-6-3), 
+[Cassandra](https://aphyr.com/posts/294-jepsen-cassandra),
+[MongoDB](https://aphyr.com/posts/322-jepsen-mongodb-stale-reads) and others.
+
+This is the reason why Gryadka was built with consistency testing in mind. Its code to test ratio is 1:5 so
+for 500 lines of Paxos there are 2500 lines of tests.
+
 ## Simulated network testing
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
 network invasions like message dropping and reordering.
 
-Each test scenario uses seed-able randomization. It means that all test's random decisions are determined by 
-its initial value (seed) so user can replay any test in order to debug an issue. 
+Each test scenario uses seed-able randomization so all test's random decisions are determined by 
+its initial value (seed) and user can replay any test and expect the same outcome. 
 
 #### How to run consistency tests:
 

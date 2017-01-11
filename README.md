@@ -125,7 +125,7 @@ saves it back and returns `query` applied to that new value.
 
 The pseudo-code:
 
-```
+```javascript
 class Paxos {
   constuctor() {
     this.storage = ...;
@@ -141,7 +141,7 @@ class Paxos {
 By choosing the appropriate change/query functions it's possible to customize Gryadka to fulfill different tasks. 
 A "last write win" key/value could be implemented as:
 
-```
+```javascript
 class LWWKeyValue {
   constuctor(paxos) {
     this.paxos = paxos;
@@ -157,7 +157,7 @@ class LWWKeyValue {
 
 A key/value storage with compare-and-set support may look like:
 
-```
+```javascript
 class CASKeyValue {
   constuctor(paxos) {
     this.paxos = paxos;

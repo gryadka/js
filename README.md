@@ -5,7 +5,7 @@ key/value storage (CP). Its core has less than 500 lines of code but provides fu
 Paxos implementation supporting such advance features as cluster membership change and 
 distinguished proposer optimization.
 
-# Goal
+# Why
 
 Paxos is a master-master replication protocol. Its inventor, Leslie Lamport wrote that 
 ["it is among the simplest and most obvious of distributed algorithms"](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)
@@ -51,9 +51,9 @@ enough the latter. For example, a key-value storage can be build just with a set
 
 # Principles
 
-The main principle of Gryadka is to get rid of everything if it isn't essential to replication and can be implemented 
-on the client side. A lot of things which look essential to replication actually can be implemented as an above layer,
-among them are transactions, sharding, consistent backup and leader election.  
+The main principle of Gryadka is to get rid of everything if it isn't essential to the replication and if it can be 
+implemented on the client side. A lot of things which look essential to replication actually can be implemented as 
+an above layer. Among them are transactions, sharding, consistent backup and leader election.  
 
 #### Transactions
 

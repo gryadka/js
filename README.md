@@ -1,9 +1,12 @@
 > THE SYSTEM IS UNDER CONSTRUCTION
 
-Gryadka is a minimalistic layer on top of multiple instances of Redis working as a distributed consistent 
-key/value storage (CP). Its core has less than 500 lines of code but provides full featured 
-Paxos implementation supporting such advance features as cluster membership change and 
-distinguished proposer optimization.
+Gryadka is a minimalistic layer on top of multiple instances of Redis working as a reliable master-master replicated 
+consistent key/value storage. When Gryadka uses 2N+1 Redis nodes it can continue working even when up to N nodes become 
+unavailable.
+
+Its core has less than 500 lines of code but provides full featured Paxos implementation supporting such advance 
+features as cluster membership change (ability to add/remove nodes to a cluser) and distinguished proposer optimization 
+(using one round trip to change a value instead of two).
 
 # Why
 
@@ -19,6 +22,19 @@ This dissonance made me wonder so I challenged myself to write a simple Paxos im
 a measure of simplicity and set a limit of 500 lines of code.
 
 # FAQ
+
+#### How does it differ from Redis Cluster?
+
+Redis Cluster is responsible for sharding and replication while Gryadka pushed sharding to an above layer and
+does only replication.
+
+For replication Redis Cluster uses master-slave model with asynchronous replication so it's unable to guarantee
+consistency. [Redis's docs](https://redis.io/topics/cluster-tutorial) writes: "Redis Cluster is not able to guarantee 
+strong consistency. In practical terms this means that under certain conditions it is possible that Redis Cluster will 
+lose writes that were acknowledged by the system to the client.".
+
+Gryadka uses Paxos based master-master replication so lost writes and other consistency issues are impossible by 
+design.
 
 #### Is it a production ready?
 

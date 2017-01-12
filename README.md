@@ -210,10 +210,31 @@ that many commercial data storages had consistency issues, among them were:
 [Cassandra](https://aphyr.com/posts/294-jepsen-cassandra),
 [MongoDB](https://aphyr.com/posts/322-jepsen-mongodb-stale-reads) and others.
 
-This is the reason why Gryadka was built with consistency testing in mind. Its code to test ratio is 1:5 so
+This is the reason why Gryadka was built with consistency testing in mind. **Its code to test ratio is 1:5** so
 for 500 lines of Paxos there are 2500 lines of tests.
 
-## Simulated network testing
+## Theory
+
+Tests can prove that a program has errors but they can't guarantee correctness. The way to go is to write a program
+based on a validated model. One can use a formal specification language like TLA+ to describe a model can be described 
+and then checked it with a model checker, alternatively an algorithm (a model) can be proved by hand using logic, 
+induction and other math arsenal.
+
+Gryadka uses Single-decree Paxos (Synod) to implement a rewritable register. A write once variant of Synod is 
+proved in [Paxos Made Simple](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf) paper.
+The rewritable variant is its extention, I bet there is a paper describing it but I failed to find it so I 
+practiced logic and proved it in this [post](http://rystsov.info/2015/09/16/how-paxos-works.html).
+
+## Cluster membership change
+
+The [proof easily extends](http://rystsov.info/2015/12/30/read-write-quorums.html) to support read and write quorums 
+of different size which is consistent with the result of 
+[Flexible Paxos: Quorum intersection revisited](https://arxiv.org/abs/1608.06696). This idea can be 
+combined with [Raft's joint consensus idea](https://raft.github.io/slides/raftuserstudy2013.pdf) to demostrate that 
+a [simple sequence of steps changes size of a cluser](http://rystsov.info/2016/01/05/raft-paxos.html) without violation 
+consistency.
+
+## Simulated network, mocked Redis testing
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
 network invasions like message dropping and reordering.

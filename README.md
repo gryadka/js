@@ -230,7 +230,7 @@ practiced logic and proved it in this [post](http://rystsov.info/2015/09/16/how-
 The [proof easily extends](http://rystsov.info/2015/12/30/read-write-quorums.html) to support read and write quorums 
 of different size which is consistent with the result of 
 [Flexible Paxos: Quorum intersection revisited](https://arxiv.org/abs/1608.06696). This idea can be 
-combined with [Raft's joint consensus idea](https://raft.github.io/slides/raftuserstudy2013.pdf) to demostrate that 
+combined with [Raft's joint consensus](https://raft.github.io/slides/raftuserstudy2013.pdf) to demostrate that 
 a [simple sequence of steps changes size of a cluser](http://rystsov.info/2016/01/05/raft-paxos.html) without violation 
 consistency.
 

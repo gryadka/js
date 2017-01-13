@@ -65,6 +65,12 @@ with Paxos all the updates happen inplace and you don't need to implement log tr
 Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
 enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
 
+#### Why did I choose JavaScript and Redis?
+
+Gryadka is an educational project so I chose 
+[the most popular language](https://github.com/blog/2047-language-trends-on-github) on GitHub and 
+[the most popular key/value storage](http://db-engines.com/en/ranking/key-value+store) (according to db-engines).
+
 # Design principle
 
 The main principle of Gryadka is **to get rid of everything if it isn't essential to the replication and if it can be 

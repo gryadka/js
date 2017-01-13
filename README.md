@@ -284,7 +284,9 @@ Prerequisites: redis, nodejs
 
 #### Membership change
 
-Please follow the link to see a screencast about membership change from 3 to 4 acceptors. It includes:
+Please follow the link to see 
+[a screencast about membership change from 3 to 4 acceptors](https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm). 
+It includes:
 
   * generation of Redis's and Gryadka's configs from a compact description
   * starting the system

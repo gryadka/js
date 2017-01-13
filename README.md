@@ -295,7 +295,7 @@ Please follow the link to see a screencast about membership change from 3 to 4 a
   * on the fly membership change from 3 to 4 acceptors
 
 
-<a href="https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm" target="_blank"><img src="https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm.png" width="979"/></a>
+<a href="https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm" target="_blank"><img src="/img/a3a4.png" width="979"/></a>
 
 #### How to query Gryadka with curl
 

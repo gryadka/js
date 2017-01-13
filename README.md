@@ -1,11 +1,9 @@
-> THE SYSTEM IS UNDER CONSTRUCTION
-
 Gryadka is a minimalistic layer on top of multiple instances of Redis working as a reliable master-master replicated 
 consistent key/value storage. When Gryadka uses 2N+1 Redis nodes it can continue working even when up to N nodes become 
 unavailable.
 
 Its core has less than 500 lines of code but provides full featured Paxos implementation supporting such advance 
-features as cluster membership change (ability to add/remove nodes to a cluser) and distinguished proposer optimization 
+features as cluster membership change (ability to add/remove nodes to a cluster) and distinguished proposer optimization 
 (using one round trip to change a value instead of two).
 
 # Why
@@ -60,7 +58,7 @@ Raft is a protocol for building replicated consistent persistent append-only log
 Multi-decree Paxos does the same as Raft (log), but Single-decree Paxos replicates atomic variable.
 
 Yes, Raft looks simpler than Multi-decree Paxos, but Single-decree Paxos is simpler than Raft because
-with Paxos all the updates happen inplace and you don't need to implement log truncation and snapshotting.
+with Paxos all the updates happen in-place and you don't need to implement log truncation and snapshotting.
 
 Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
 enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
@@ -105,7 +103,7 @@ feature for a consistent storage but many major storages don't support it.
 
 Hopefully consistent backups can be implemented on the client side. If a system is based on the actor model and a key/value 
 storage is only used to keep actor's state then it's possible to use [Lai–Yang's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book)
-and [Mattern's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book).  
+or [Mattern's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book) to make consistent snapshots.  
 
 Alternatively if the system isn't based on the actor model then it's possible to integrate snapshotting with
 transactions by denying transactions if its keys were backed up in different snapshots.
@@ -206,7 +204,7 @@ The system is distributed and homogeneous so it has several endpoints and all of
 to invoke the `changeQuery` api; however if all the requests affecting the same `key` land on the same endpoint then
 the distinguished proposer optimization kicks in and the requests run twice faster.
 
-Gryadka is based on remote interactions which significantly differ from local interactions - instead of having two possible 
+Gryadka is based on remote interactions. Remote interactions significantly differ from local - instead of having two possible 
 outcomes of an operation it has three: 'success', 'failure' and 'unknown'. The latter may be returned when an operation timeouts
 and the true outcome is unknown.
 
@@ -244,7 +242,7 @@ induction and other math arsenal.
 
 Gryadka uses Single-decree Paxos (Synod) to implement a rewritable register. A write once variant of Synod is 
 proved in [Paxos Made Simple](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf) paper.
-The rewritable variant is its extention, I bet there is a paper describing it but I failed to find it so I 
+The rewritable variant is its extension, I bet there is a paper describing it but I failed to find it so I 
 practiced logic and proved it in this [post](http://rystsov.info/2015/09/16/how-paxos-works.html).
 
 ## Cluster membership change
@@ -252,11 +250,11 @@ practiced logic and proved it in this [post](http://rystsov.info/2015/09/16/how-
 The [proof easily extends](http://rystsov.info/2015/12/30/read-write-quorums.html) to support read and write quorums 
 of different size which is consistent with the result of 
 [Flexible Paxos: Quorum intersection revisited](https://arxiv.org/abs/1608.06696). This idea can be 
-combined with [Raft's joint consensus](https://raft.github.io/slides/raftuserstudy2013.pdf) to demostrate that 
-a [simple sequence of steps changes size of a cluser](http://rystsov.info/2016/01/05/raft-paxos.html) without violation 
+combined with [Raft's joint consensus](https://raft.github.io/slides/raftuserstudy2013.pdf) to demonstrate that 
+a [simple sequence of steps changes size of a cluster](http://rystsov.info/2016/01/05/raft-paxos.html) without violation 
 consistency.
 
-## Simulated network, mocked Redis testing
+## Simulated network, mocked Redis
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
 network invasions like message dropping and reordering.
@@ -275,7 +273,7 @@ Prerequisites: nodejs
 
 Instead of "void" one can use "record" to record all events fired in the system during a simulation after it. Another
 alternative is "replay" - it executes the tests and compare current events with previously written events (it was
-useful to check determenism of a simulation).
+useful to check determinism of a simulation).
 
 It takes time to execute all test cases so run-consistenty-check.sh also support execution of a particular test case: just
 replace "all" with the test's name. Run ./run-consistenty-check.sh without arguments to see which tests are supported.
@@ -297,7 +295,7 @@ Please follow the link to see a screencast about membership change from 3 to 4 a
 
 <a href="https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm" target="_blank"><img src="/img/a3a4.png" width="979"/></a>
 
-#### How to query Gryadka with curl
+#### Manual quering Gryadka with cURL
 
 1. Clone this repo
 2. cd gryadka

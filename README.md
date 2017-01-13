@@ -294,7 +294,8 @@ Please follow the link to see a screencast about membership change from 3 to 4 a
   * stopping acceptors to simulate crashed
   * on the fly membership change from 3 to 4 acceptors
 
-[![asciicast](https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm.png)](https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm)
+
+<a href="https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm" target="_blank"><img src="https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm.png" width="979"/></a>
 
 #### How to query Gryadka with curl
 

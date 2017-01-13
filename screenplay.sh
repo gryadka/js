@@ -1,6 +1,8 @@
 
 exit 0
 
+# see https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm for a screencast
+
 #### 1
 ./demo/step1.sh
 ./bin/pseudo-distribute.sh etc/a3a4.json
@@ -8,19 +10,8 @@ exit 0
 
 #### 2
 ./demo/step2.sh
-tmux
-ctrl-b , acceptor
-make grid: xx
-           xx
-ctrl-b c
-ctrl-b , proposers
-make grid: x
-           x
-ctrl-b c
-ctrl-b , test console
 
-ctrl-b c
-ctrl-b , comments
+# setup tmux
 
 #### 3
 ./demo/step3.sh

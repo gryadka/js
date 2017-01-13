@@ -284,7 +284,19 @@ replace "all" with the test's name. Run ./run-consistenty-check.sh without argum
 
 Prerequisites: redis, nodejs
 
-#### Staring a system and using curl to put a value
+#### Membership change
+
+Please follow the link to see a screencast about membership change from 3 to 4 acceptors. It includes:
+
+  * generation of Redis's and Gryadka's configs from a compact description
+  * starting the system
+  * using test console to run clients, monitor thier progress and detecting consistency violation
+  * stopping acceptors to simulate crashed
+  * on the fly membership change from 3 to 4 acceptors
+
+[![asciicast](https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm.png)](https://asciinema.org/a/7ewvgpfkyh8190q1ifumauekm)
+
+#### How to query Gryadka with curl
 
 1. Clone this repo
 2. cd gryadka
@@ -299,36 +311,3 @@ Prerequisites: redis, nodejs
     * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-update","args": {"version":0, "value": 42}},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
     * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-id","args": null},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
     * curl -w "\n" -H "Content-Type: application/json" -X POST -d '{"key": "answer", "change": {"name": "kv-reset","args": "to pass butter"},"query": {"name": "kv-read","args": null}}' http://localhost:8079/change
-
-#### Membership change
-
-1. ./bin/pseudo-distribute.sh etc/a3a4.json
-2. redis-server deployment/a0/redis.conf &
-3. redis-server deployment/a1/redis.conf &
-4. redis-server deployment/a2/redis.conf &
-5. ./bin/gryadka.sh deployment/proposers/p0.json &
-6. ./bin/gryadka.sh deployment/proposers/p1.json &
-7. [dashboard] open a new tab and run: ./run-system-check.sh etc/a3a4.json
-8. [dashboard]: "clients: c0,c1"
-9. [dashboard]: "make c0,c1 use p0,p1"
-10. [dashboard]: "start c0,c1"
-11. redis-server deployment/a3/redis.conf &
-12. ./bin/gryadka.sh deployment/proposers/p2.json &
-13. ./bin/gryadka.sh deployment/proposers/p3.json &
-14. [dashboard]: "clients: c2,c3"
-15. [dashboard]: "make c2,c3 use p2,p3"
-16. [dashboard]: "start c2,c3"
-17. [dashboard]: "stop c0,c1"
-18. kill p0 & p1 proposers
-19. ./bin/keys-dumper.sh etc/a3a4.json a0 >> keys1
-20. ./bin/keys-dumper.sh etc/a3a4.json a1 >> keys1
-21. ./bin/keys-dumper.sh etc/a3a4.json a2 >> keys1
-22. cat keys1 | sort | uniq > keys2
-23. ./bin/keys-syncer.sh deployment/proposers/s0.json keys2
-24. ./bin/gryadka.sh deployment/proposers/p4.json &
-25. ./bin/gryadka.sh deployment/proposers/p5.json &
-26. [dashboard]: "clients: c4,c5"
-27. [dashboard]: "make c4,c5 use p4,p5"
-28. [dashboard]: "start c4,c5"
-29. [dashboard]: "stop c2,c3"
-30. kill p2 & p3 proposers

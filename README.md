@@ -112,7 +112,7 @@ storage is only used to keep actor's state then it's possible to use [Lai–Yang
 or [Mattern's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book) to make consistent snapshots.  
 
 Another approach to snapshotting is to backup each key independently, to keep information about a version of the last 
-backup along with a value per each key and to reject all transactions if they touch keys with different backup versions.
+backup per each key along with a value and to reject all transactions if they touch keys with different backup versions.
 
 #### Leader election
 

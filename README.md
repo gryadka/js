@@ -254,7 +254,7 @@ combined with [Raft's joint consensus](https://raft.github.io/slides/raftuserstu
 a [simple sequence of steps changes size of a cluster](http://rystsov.info/2016/01/05/raft-paxos.html) without violation 
 consistency.
 
-## Simulated network, mocked Redis
+## Simulated network, mocked Redis, fault injections
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
 network invasions like message dropping and reordering.

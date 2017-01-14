@@ -23,18 +23,17 @@ a measure of simplicity and set a limit of 500 lines of code.
 
 #### How does it differ from Redis Cluster?
 
-Redis Cluster is responsible for sharding and replication while Gryadka pushed sharding to an above layer and
-does only replication.
+[Redis Cluster](https://redis.io/topics/cluster-spec) is responsible for sharding and replication while Gryadka pushed sharding to a layer above and does only replication.
 
 For replication Redis Cluster uses master-slave model with asynchronous replication so it's unable to guarantee
-consistency. [Redis's docs](https://redis.io/topics/cluster-tutorial) writes: "Redis Cluster is not able to guarantee 
+consistency. [Redis's docs](https://redis.io/topics/cluster-tutorial) say: "Redis Cluster is not able to guarantee 
 strong consistency. In practical terms this means that under certain conditions it is possible that Redis Cluster will 
 lose writes that were acknowledged by the system to the client.".
 
 Gryadka uses Paxos based master-master replication so lost writes and other consistency issues are impossible by 
 design.
 
-#### Is it a production ready?
+#### Is it production ready?
 
 No, it's an educational project and was never intended to be in production. It was created:
 
@@ -44,13 +43,13 @@ No, it's an educational project and was never intended to be in production. It w
 Nevertheless Gryadka supports cluster membership change and distinguished proposer optimization so it has all
 the necessary production features.
 
-#### Does it support other than Redis storages?
+#### Does it support storages other than Redis?
 
 No, the size of a pluggable storage system would have been of the same magnitude as the Gryadka's current
 Paxos implementation so only Redis is supported.
 
-The good news is that the size of the code is tiny so it should be easy to read it, to understand and to rewrite
-it with any storage of your choice.
+The good news is that the size of the code is tiny so it should be easy to read, understand and rewrite
+it for any storage of your choice.
 
 #### I heard that Raft is simpler than Paxos, why don't you use it?
 
@@ -71,7 +70,7 @@ Gryadka is an educational project so I chose
 
 # Design principle
 
-The main principle of Gryadka is **to get rid of everything if it isn't essential to the replication and if it can be 
+The main principle of Gryadka is **to get rid of everything that isn't essential to the replication and everything that can be 
 implemented on the client side**. A lot of things which look essential to replication actually can be implemented as 
 an above layer. Among them are transactions, sharding, consistent backup and leader election.  
 
@@ -87,7 +86,7 @@ levels from Read Committed to Serializable. Among them are:
  * ["How CockroachDB Does Distributed, Atomic Transactions"](https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/) by CockroachLabs
  * ["Perform Two Phase Commit"](https://docs.mongodb.com/manual/tutorial/perform-two-phase-commits/) by MongoDB
 
-It might be useful also to take a look on ["Visualization of RAMP transactions"](http://rystsov.info/2016/04/07/ramp.html) and
+It might also be useful to take a look at ["Visualization of RAMP transactions"](http://rystsov.info/2016/04/07/ramp.html) and
 ["Visualization of serializable cross shard client-side transactions"](http://rystsov.info/2016/03/02/cross-shard-txs.html). 
 
 #### Consistent backups
@@ -116,18 +115,18 @@ It effectively reduces the number of round trips from two to one if the next upd
 from the same proposer (otherwise nothing bad happens because Paxos holds consistency in the presence
 of concurrent proposers).  
 
-So the problem of leader election reduces to the problem how to land most of the user updates to the same
+So the problem of leader election reduces to the problem of how to land most of the user updates to the same
 node. It can be solved on the above layer with [Microsoft Orleans](https://github.com/dotnet/orleans), 
 [Uber RingPop](https://github.com/uber/ringpop-node) or any other consistent hashing routing approach.
 
 #### Sharding
 
-Sharding is a way to split big key space into disjoint smaller key spaces and host each of them on each own
+Sharding is a way to split big key space into disjoint smaller key spaces and host each of them on their own
 instance of the system in order to overcome the size limitations. The procedure of splitting and joining
 key spaces should not affect correctness of the concurrent key updates operations.
 
 The straightforward approach is to use transactions to simultaneously put a tombstone to the big key space instance of
-the system and to init smaller key space with the tombed value. Once all the key are migrated and all the clients
+the system and to init smaller key space with the tombed value. Once all the keys are migrated and all the clients
 switch to the new key/space topology then it's safe to drop the tombstoned key/values from the original key space.
 
 So sharding can be also pushed to the client side.
@@ -236,8 +235,8 @@ for 500 lines of Paxos there are 2500 lines of tests.
 ## Theory
 
 Tests can prove that a program has errors but they can't guarantee correctness. The way to go is to write a program
-based on a validated model. One can use a formal specification language like TLA+ to describe a model can be described 
-and then checked it with a model checker, alternatively an algorithm (a model) can be proved by hand using logic, 
+based on a validated model. One can use a formal specification language like TLA+ to describe a model 
+and then check it with a model checker, alternatively an algorithm (a model) can be proved by hand using logic, 
 induction and other math arsenal.
 
 Gryadka uses Single-decree Paxos (Synod) to implement a rewritable register. A write once variant of Synod is 
@@ -251,15 +250,15 @@ The [proof easily extends](http://rystsov.info/2015/12/30/read-write-quorums.htm
 of different size which is consistent with the result of 
 [Flexible Paxos: Quorum intersection revisited](https://arxiv.org/abs/1608.06696). This idea can be 
 combined with [Raft's joint consensus](https://raft.github.io/slides/raftuserstudy2013.pdf) to demonstrate that 
-a [simple sequence of steps changes size of a cluster](http://rystsov.info/2016/01/05/raft-paxos.html) without violation 
+a [simple sequence of steps changes the size of a cluster](http://rystsov.info/2016/01/05/raft-paxos.html) without violation of
 consistency.
 
 ## Simulated network, mocked Redis
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
-network invasions like message dropping and reordering.
+network invasions such as message dropping and reordering.
 
-Each test scenario uses seed-able randomization so all test's random decisions are determined by 
+Each test scenario uses seed-able randomization so all tests' random decisions are determined by 
 its initial value (seed) and user can replay any test and expect the same outcome. 
 
 #### How to run consistency tests:
@@ -272,10 +271,10 @@ Prerequisites: nodejs
 4. ./run-consistenty-check.sh all void seed1
 
 Instead of "void" one can use "record" to record all events fired in the system during a simulation after it. Another
-alternative is "replay" - it executes the tests and compare current events with previously written events (it was
+alternative is "replay" - it executes the tests and compares current events with previously written events (it was
 useful to check determinism of a simulation).
 
-It takes time to execute all test cases so run-consistenty-check.sh also support execution of a particular test case: just
+It takes time to execute all test cases so run-consistenty-check.sh also supports execution of a particular test case: just
 replace "all" with the test's name. Run ./run-consistenty-check.sh without arguments to see which tests are supported.
 
 ## End-to-end testing
@@ -291,7 +290,7 @@ It includes:
   * generation of Redis's and Gryadka's configs from a compact description
   * starting the system
   * using test console to run clients, monitor thier progress and detecting consistency violation
-  * stopping acceptors to simulate crashed
+  * stopping acceptors to simulate crashes
   * on the fly membership change from 3 to 4 acceptors
 
 

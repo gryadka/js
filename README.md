@@ -55,8 +55,8 @@ the necessary production features.
 No, the size of a pluggable storage system would have been of the same magnitude as the Gryadka's current
 Paxos implementation so only Redis is supported.
 
-The good news is that the size of the code is tiny so it should be easy to read, understand and rewrite
-it for any storage of your choice.
+The good news is that the size of the code is tiny therefore it should be easy to read, to understand and 
+to rewriteit for any storage of your choice.
 
 #### I heard that Raft is simpler than Paxos, why don't you use it?
 

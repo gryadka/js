@@ -23,12 +23,19 @@ a measure of simplicity and set a limit of 500 lines of code.
 
 #### How does it differ from Redis Cluster?
 
-[Redis Cluster](https://redis.io/topics/cluster-spec) is responsible for sharding and replication while Gryadka pushed sharding to a layer above and does only replication.
+[Redis Cluster](https://redis.io/topics/cluster-spec) is responsible for sharding and replication while Gryadka pushs 
+sharding to an above layer and focuses only on replication.
 
-For replication Redis Cluster uses master-slave model with asynchronous replication so it's unable to guarantee
-consistency. [Redis's docs](https://redis.io/topics/cluster-tutorial) say: "Redis Cluster is not able to guarantee 
-strong consistency. In practical terms this means that under certain conditions it is possible that Redis Cluster will 
-lose writes that were acknowledged by the system to the client.".
+Both systems execute a request only when a node executing the request is "connected" to the 
+majority of the cluster. The difference is in the latency/safety trade-off decisions.
+
+Even in the best case Gryadka requires two consequent round-trips: one is between a client and a proposer, another is 
+between the proposer and the acceptors. Meanwhile Redis uses asynchronous replication and requires just one round trip: 
+between a client and the master.
+
+But the better latency has its price, [Redis's docs](https://redis.io/topics/cluster-tutorial) warns us: 
+"Redis Cluster is not able to guarantee strong consistency. In practical terms this means that under certain 
+conditions it is possible that Redis Cluster will lose writes that were acknowledged by the system to the client.".
 
 Gryadka uses Paxos based master-master replication so lost writes and other consistency issues are impossible by 
 design.

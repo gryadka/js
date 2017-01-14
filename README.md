@@ -111,8 +111,8 @@ Hopefully consistent backups can be implemented on the client side. If a system 
 storage is only used to keep actor's state then it's possible to use [Lai–Yang's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book)
 or [Mattern's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book) to make consistent snapshots.  
 
-Alternatively if the system isn't based on the actor model then it's possible to integrate snapshotting with
-transactions by denying transactions if its keys were backed up in different snapshots.
+Another approach to snapshotting is to backup each key independently, to keep information about a version of the last 
+backup along with a value per each key and to reject all transactions if they touch keys with different backup versions.
 
 #### Leader election
 

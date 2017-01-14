@@ -69,7 +69,7 @@ with Paxos all the updates happen in-place and you don't need to implement log t
 Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
 enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
 
-#### Why did I choose JavaScript and Redis?
+#### Why did you choose JavaScript and Redis?
 
 Gryadka is an educational project so I chose 
 [the most popular language](https://github.com/blog/2047-language-trends-on-github) on GitHub and 

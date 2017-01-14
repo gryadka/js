@@ -1,5 +1,5 @@
-Gryadka is a minimalistic layer on top of multiple instances of Redis working as a reliable master-master replicated 
-consistent key/value storage. When Gryadka uses 2N+1 Redis nodes it can continue working even when up to N nodes become 
+Gryadka is a minimalistic reliable master-master replicated consistent key/value storage layer on top of multiple 
+instances of Redis. When Gryadka uses 2N+1 Redis nodes it can continue working even when up to N nodes become 
 unavailable.
 
 Its core has less than 500 lines of code but provides full featured Paxos implementation supporting such advance 

@@ -75,6 +75,14 @@ Gryadka is an educational project so I chose
 [the most popular language](https://github.com/blog/2047-language-trends-on-github) on GitHub and 
 [the most popular key/value storage](http://db-engines.com/en/ranking/key-value+store) (according to db-engines).
 
+#### The project looks awesome, do you need any help?
+
+Sure. The more people can understand Gryadka the better. One way of doing it is to keep code as simple as possible,
+another is to eliminate other barriers:
+
+  * by porting Gryadka from JavaScript to other programming languages
+  * by translating README from English to other human languages       
+
 # Design principle
 
 The main principle of Gryadka is **to get rid of everything that isn't essential to the replication and everything that can be 

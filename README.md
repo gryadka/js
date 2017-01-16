@@ -271,26 +271,49 @@ consistency.
 ## Simulated network, mocked Redis, fault injections
 
 Testing is done by mocking the network layer and checking consistency invariants during various 
-network invasions such as message dropping and reordering.
+network fault injections such as message dropping and message reordering.
 
-Each test scenario uses seed-able randomization so all tests' random decisions are determined by 
-its initial value (seed) and user can replay any test and expect the same outcome. 
+Each test scenario uses seed-able randomization so all test's random decisions are determined by 
+its initial value (seed) and user can replay any test and expect the same outcome.
 
-#### How to run consistency tests:
+### Invariants
+
+One of the examples of consistency violation is the following situation:
+
+1. Alice reads a value
+2. Alice tells Bob the observed value via an out of the system channel (a rumor)
+3. Bob reads a value but the system returns a value which is older than the rumor 
+
+It gives a hint how to check linearizability:
+
+* Tests test a system similar to CASKeyValue
+* All clients are homogeneous and execute the following loop
+  1. Read a value
+  2. Change it
+  3. Write it back
+* Clients run in the same process concurrently so they spread rumors instantly after each read or write operation
+* Once a client observed a value (through the read or write operation) she checks that it's equal or newer than the one known through rumors on the moment the operation started
+
+This procedure already helped to find a couple of consistency bugs so it works :)  
+
+In order to avoid a degradation of the consistency test to `return true;` there is the `loosing/c2p2k1.i` test which
+tests the consistency check on an a priory inconsistent Paxos configuration (three acceptors with quorums of size 1).  
+
+### How to run consistency tests:
 
 Prerequisites: nodejs
 
 1. Clone this repo
 2. cd gryadka
 3. npm install
-4. ./run-consistenty-check.sh all void seed1
+4. ./run-consistency-tests.sh all void seed1
 
 Instead of "void" one can use "record" to record all events fired in the system during a simulation after it. Another
 alternative is "replay" - it executes the tests and compares current events with previously written events (it was
 useful to check determinism of a simulation).
 
-It takes time to execute all test cases so run-consistenty-check.sh also supports execution of a particular test case: just
-replace "all" with the test's name. Run ./run-consistenty-check.sh without arguments to see which tests are supported.
+It takes time to execute all test cases so run-consistency-tests.sh also supports execution of a particular test case: just
+replace "all" with the test's name. Run ./run-consistency-tests.sh without arguments to see which tests are supported.
 
 ## End-to-end testing
 

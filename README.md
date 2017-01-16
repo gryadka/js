@@ -278,7 +278,7 @@ its initial value (seed) and user can replay any test and expect the same outcom
 
 ### Invariants
 
-One of the examples of consistency violation is the following situation:
+One of the examples of a consistency violation is the following situation:
 
 1. Alice reads a value
 2. Alice tells Bob the observed value via an out of the system channel (a rumor)
@@ -291,7 +291,7 @@ It gives a hint how to check linearizability:
   1. Read a value
   2. Change it
   3. Write it back
-* Clients run in the same process concurrently so they spread rumors instantly after each read or write operation
+* Clients run in the same process concurrently and spread rumors instantly after each read or write operation
 * Once a client observed a value (through the read or write operation) she checks that it's equal or newer than the one known through rumors on the moment the operation started
 
 This procedure already helped to find a couple of consistency bugs so it works :)  

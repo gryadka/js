@@ -315,6 +315,31 @@ useful to check determinism of a simulation).
 It takes time to execute all test cases so run-consistency-tests.sh also supports execution of a particular test case: just
 replace "all" with the test's name. Run ./run-consistency-tests.sh without arguments to see which tests are supported.
 
+#### Test scenarios
+
+Tests are located in the `tests/consistency/scenarios` folder grouped into 4 scenarios. All the tests follow the same naming convention so if you see a test named, say, `c2p2k1` you can be sure that it checks consistency when there are two proposers and two concurrent clients (c2) working with the same key (k1). 
+
+##### Shuffling
+
+Shuffling tests check consistency in the presence of arbitrary network delays testing the cases when an order of the received messages does't match the order of the sent messages.
+
+##### Loosing
+
+Loosing tests deal with arbitrary network delays and arbitrary message loss.
+
+##### Partitioning
+
+Partitioning tests are about arbitrary network delays, arbitrary message loss and continuous connectivity issues between proposers and acceptors. 
+
+##### Membership
+
+Membership tests check that the consistency holds in the presence of arbitrary network delays and arbitrary message loss during the progress of extending/shrinking a cluster.
+
+|Name | Description|
+|---|---|
+|c2p2k2.a3.a4 | tests a process of migration from 3 acceptors to 4 acceptors |
+|c2p2k2.flux | tests a process of continuous extending/shrinking a cluster between 3 and 4 acceptors |
+
 ## End-to-end testing
 
 Prerequisites: redis, nodejs

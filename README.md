@@ -278,7 +278,7 @@ its initial value (seed) and user can replay any test and expect the same outcom
 
 ### Invariants
 
-One of the examples of a consistency violation is the following situation:
+The following situation is one of the examples of a consistency violation:
 
 1. Alice reads a value
 2. Alice tells Bob the observed value via an out of the system channel (a rumor)
@@ -286,7 +286,7 @@ One of the examples of a consistency violation is the following situation:
 
 It gives a hint how to check linearizability:
 
-* Tests test a system similar to CASKeyValue
+* Tests check a system similar to CASKeyValue
 * All clients are homogeneous and execute the following loop
   1. Read a value
   2. Change it

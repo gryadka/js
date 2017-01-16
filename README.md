@@ -296,7 +296,7 @@ It gives a hint how to check linearizability:
 
 This procedure already helped to find a couple of consistency bugs so it works :)  
 
-In order to avoid a degradation of the consistency test to `return true;` there is the `loosing/c2p2k1.i` test which
+In order to avoid a degradation of the consistency test to `return true;` there is the `losing/c2p2k1.i` test which
 tests the consistency check on an a priory inconsistent Paxos configuration (three acceptors with quorums of size 1).  
 
 ### How to run consistency tests:
@@ -323,9 +323,9 @@ Tests are located in the `tests/consistency/scenarios` folder grouped into 4 sce
 
 Shuffling tests check consistency in the presence of arbitrary network delays testing the cases when an order of the received messages does't match the order of the sent messages.
 
-##### Loosing
+##### Losing
 
-Loosing tests deal with arbitrary network delays and arbitrary message loss.
+Losing tests deal with arbitrary network delays and arbitrary message loss.
 
 ##### Partitioning
 

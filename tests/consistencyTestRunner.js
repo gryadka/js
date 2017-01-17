@@ -5,7 +5,7 @@ import {Void} from "./consistency/lib/logging/Void"
 
 const CMDS = ["record", "replay", "reduce", "void"];
 const TESTS = [
-    "losing/c1p1k1", "shuffling/c1p1k1", "losing/c2p2k1.i", "shuffling/c1p2k2", "partitioning/c1p1k1",
+    "losing/c6p2k2", "losing/c1p1k1", "shuffling/c1p1k1", "losing/c2p2k1.i", "shuffling/c1p2k2", "partitioning/c1p1k1",
     "shuffling/c2p1k2", "shuffling/c2p2k1", "losing/c2p2k2", "partitioning/c2p2k2",
     "membership/c2p2k2.a3.a4", "membership/c2p2k2.flux"
 ];

@@ -1,5 +1,6 @@
 import {Tick} from "./Tick";
 
+// FIXME: Introduce TTL to avoid infinite grow of used memory
 export default class Cache {
     constructor(id) {
         this.data = new Map();

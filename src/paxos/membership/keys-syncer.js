@@ -7,7 +7,7 @@ import fs from "fs"
 import readline from "readline"
 
 class Syncer {
-    async start(settings) {
+    start(settings) {
         const cache = new Cache(settings.id);
         this.acceptors = settings.acceptors.map(x => new AcceptorClient(x));
         this.acceptors.forEach(x => x.start());
@@ -34,7 +34,7 @@ var keys = fs.readFileSync(process.argv[3]).toString().split("\n").filter(x => x
 (async function() {
     var syncer = null;
     try {
-        syncer = await new Syncer().start(settings);
+        syncer = new Syncer().start(settings);
         for (const key of keys) {
             while (true) {
                 const result = await syncer.sync(key);
@@ -45,6 +45,7 @@ var keys = fs.readFileSync(process.argv[3]).toString().split("\n").filter(x => x
             } 
         }
         syncer.close();
+        console.info("Done");
     } catch (error) {
         console.info(error);
         if (syncer != null) {

@@ -1,7 +1,7 @@
-import {LogWriter} from "./consistency/lib/logging/LogWriter"
-import {LogChecker} from "./consistency/lib/logging/LogChecker"
-import {LimitedVoid} from "./consistency/lib/logging/LimitedVoid"
-import {Void} from "./consistency/lib/logging/Void"
+const {LogWriter} = require("./consistency/lib/logging/LogWriter");
+const {LogChecker} = require("./consistency/lib/logging/LogChecker");
+const {LimitedVoid} = require("./consistency/lib/logging/LimitedVoid");
+const {Void} = require("./consistency/lib/logging/Void");
 
 const CMDS = ["record", "replay", "reduce", "void"];
 const TESTS = [

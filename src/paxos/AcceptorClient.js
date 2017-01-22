@@ -1,7 +1,7 @@
-import {Tick} from "./Tick";
-import redisAsyncClient from "./utils/redisAsyncClient";
+const {Tick} = require("./Tick");
+const {redisAsyncClient} = require("./utils/redisAsyncClient");
 
-export default class AcceptorClient {
+class AcceptorClient {
     constructor(settings) {
         this.settings = settings;
         this.isTransient = this.settings.isTransient
@@ -36,3 +36,5 @@ export default class AcceptorClient {
 function respond(acceptor, msg) {
     return { acceptor, msg };
 }
+
+exports.AcceptorClient = AcceptorClient;

@@ -1,8 +1,10 @@
-import redis from "redis";
-import Promise from "bluebird";
+const redis = require("redis");
+const Promise = require("bluebird");
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 
-export default function redisAsyncClient(port, host) {
+function redisAsyncClient(port, host) {
     return redis.createClient({port: port, host: host, retry_strategy: options=>2000});
 }
+
+exports.redisAsyncClient = redisAsyncClient;

@@ -1,4 +1,4 @@
-export async function loopOnError(timer, action, errors) {
+async function loopOnError(timer, action, errors) {
     while (true) {
         // to put each while's iteration as a new event in the event loop  
         await timer.yield();
@@ -13,7 +13,7 @@ export async function loopOnError(timer, action, errors) {
     }
 }
 
-export async function retryOnError(timer, action, errors, times) {
+async function retryOnError(timer, action, errors, times) {
     while (times > 0) {
         // to put each while's iteration as a new event in the event loop  
         await timer.yield();
@@ -37,12 +37,12 @@ function RetryCountExceedError() {
 RetryCountExceedError.prototype = Object.create(Error.prototype);
 RetryCountExceedError.prototype.constructor = RetryCountExceedError;
 
-export function isRetryCountExceedError(e) {
+function isRetryCountExceedError(e) {
     if (!e) return false;
     return (e instanceof RetryCountExceedError)
 }
 
-export function getErrorChecker(status, errors) {
+function getErrorChecker(status, errors) {
     return function(e) {
         if (!e) return false;
         if (e.status!=status) return false;
@@ -55,6 +55,10 @@ export function getErrorChecker(status, errors) {
     };
 }
 
-export const isAcceptUnknownError = getErrorChecker("UNKNOWN", ["ERRNO004","ERRNO009"]);
-export const isProposeNoError = getErrorChecker("NO", ["ERRNO003","ERRNO009"]);
-export const isConcurrentNoError = getErrorChecker("NO", ["ERRNO002"]);
+exports.loopOnError = loopOnError;
+exports.retryOnError = retryOnError;
+exports.isRetryCountExceedError = isRetryCountExceedError;
+exports.getErrorChecker = getErrorChecker;
+exports.isAcceptUnknownError = getErrorChecker("UNKNOWN", ["ERRNO004","ERRNO009"]);
+exports.isProposeNoError = getErrorChecker("NO", ["ERRNO003","ERRNO009"]);
+exports.isConcurrentNoError = getErrorChecker("NO", ["ERRNO002"]);

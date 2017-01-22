@@ -1,7 +1,7 @@
-import {Tick} from "./Tick";
+const {Tick} = require("./Tick");
 
 // FIXME: Introduce TTL to avoid infinite grow of used memory
-export default class Cache {
+class Cache {
     constructor(id) {
         this.data = new Map();
         this.locks = new Set();
@@ -65,3 +65,5 @@ export default class Cache {
         slice.isLeader = false;
     }
 }
+
+exports.Cache = Cache;

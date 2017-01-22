@@ -1,8 +1,8 @@
-import {AcceptorMock} from "./Acceptor"
-import Cache from "../../../src/paxos/Cache";
-import Proposer from "../../../src/paxos/Proposer";
+const {AcceptorMock} = require("./Acceptor");
+const {Cache} = require("../../../src/paxos/Cache");
+const {Proposer} = require("../../../src/paxos/Proposer");
 
-export function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null}) {
+function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null}) {
     acceptorClients = createAcceptorClients(Object.assign({}, acceptorClients, { pid: pid }));
     
     const cache = new Cache(pidtime);
@@ -11,10 +11,14 @@ export function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptor
     return proposer;
 }
 
-export function createAcceptors(ctx, ids) {
+function createAcceptors(ctx, ids) {
     return ids.map(id => new AcceptorMock(ctx, id));
 }
 
-export function createAcceptorClients({pid, network, acceptors, transient}) {
+function createAcceptorClients({pid, network, acceptors, transient}) {
     return acceptors.map(x => x.createClient(pid, network, transient.has(x.id)));
 }
+
+exports.createAcceptorClients = createAcceptorClients;
+exports.createAcceptors = createAcceptors;
+exports.createProposer = createProposer;

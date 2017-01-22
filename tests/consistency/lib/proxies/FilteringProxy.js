@@ -1,6 +1,4 @@
-import {FailRequestError} from "../../../../src/paxos/utils/MultiRequest"
-
-export class FilteringProxy {
+class FilteringProxy {
     static w({ctx, ignoreIf}) {
         return service => new FilteringProxy(ctx, ignoreIf, service);
     }
@@ -17,3 +15,5 @@ export class FilteringProxy {
         }
     }
 }
+
+exports.FilteringProxy = FilteringProxy;

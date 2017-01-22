@@ -1,4 +1,4 @@
-export function ConsistencyViolation(info) {
+function ConsistencyViolation(info) {
     this.info = info;
     this.name = 'ConsistencyViolation';
     this.stack = (new Error()).stack;
@@ -6,7 +6,7 @@ export function ConsistencyViolation(info) {
 ConsistencyViolation.prototype = Object.create(Error.prototype);
 ConsistencyViolation.prototype.constructor = ConsistencyViolation;
 
-export class IncConsistencyChecker {
+class IncConsistencyChecker {
     static isConsistencyViolation(e) {
         return (e instanceof ConsistencyViolation);
     }
@@ -55,3 +55,6 @@ class ValueTx {
         this.cc.values.set(this.key, {version, value});
     }
 }
+
+exports.ConsistencyViolation = ConsistencyViolation;
+exports.IncConsistencyChecker = IncConsistencyChecker;

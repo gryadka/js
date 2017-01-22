@@ -1,6 +1,6 @@
-import fs from "fs";
+const fs = require("fs");
 
-export class LogWriter {
+class LogWriter {
     static w({path}) {
         return () => new LogWriter(path);
     }
@@ -60,3 +60,5 @@ export class LogWriter {
         }
     }
 }
+
+exports.LogWriter = LogWriter

@@ -1,6 +1,4 @@
-
-
-export class ShufflingProxy {
+class ShufflingProxy {
     static w({ctx, base, variance}) {
         return service => new ShufflingProxy(ctx, base, variance, service);
     }
@@ -26,3 +24,5 @@ export class ShufflingProxy {
         });
     }
 }
+
+exports.ShufflingProxy = ShufflingProxy;

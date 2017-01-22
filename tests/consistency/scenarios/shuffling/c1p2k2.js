@@ -1,18 +1,18 @@
-import {Context} from "../../lib/Context"
+const {Context} = require("../../lib/Context")
 
-import {createProposer, createAcceptors} from "../../lib/Mocks"
-import {IncClient} from "../../lib/clients/IncClient"
-import {IncConsistencyChecker} from "../../lib/clients/IncConsistencyChecker"
-import {isProposeNoError, isAcceptUnknownError} from "../../lib/clients/exceptions"
+const {createProposer, createAcceptors} = require("../../lib/Mocks")
+const {IncClient} = require("../../lib/clients/IncClient")
+const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker")
+const {isProposeNoError, isAcceptUnknownError} = require("../../lib/clients/exceptions")
 
-import {Proxy} from "../../lib/proxies/Proxy"
-import {ShufflingProxy} from "../../lib/proxies/ShufflingProxy"
-import {LoosingProxy} from "../../lib/proxies/LoosingProxy"
-import {LoggingProxy} from "../../lib/proxies/LoggingProxy"
+const {Proxy} = require("../../lib/proxies/Proxy")
+const {ShufflingProxy} = require("../../lib/proxies/ShufflingProxy")
+const {LosingProxy} = require("../../lib/proxies/LosingProxy")
+const {LoggingProxy} = require("../../lib/proxies/LoggingProxy")
 
 const MAX_TIME_DELAY = 1000;
 
-export async function test({seed, logger, intensity=null}) {
+exports.test =  async function({seed, logger, intensity=null}) {
     intensity = intensity || 200;
     const ctx = new Context(MAX_TIME_DELAY, seed);
 

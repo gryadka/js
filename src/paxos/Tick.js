@@ -1,4 +1,4 @@
-export class Tick {
+class Tick {
     static zero() {
         return new Tick(0,0,0);
     }
@@ -42,3 +42,5 @@ export class Tick {
         return 0;
     }
 }
+
+exports.Tick = Tick

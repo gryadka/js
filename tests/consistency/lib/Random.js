@@ -1,5 +1,4 @@
-
-export class Random {
+class Random {
     constructor(random) {
         this.random = random;
     }
@@ -14,3 +13,5 @@ export class Random {
         return data[this.next(data.length)];
     }
 }
+
+exports.Random = Random;

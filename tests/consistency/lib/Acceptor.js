@@ -1,6 +1,6 @@
-import {Tick} from "../../../src/paxos/Tick";
+const {Tick} = require("../../../src/paxos/Tick");
 
-export class AcceptorClientMock {
+class AcceptorClientMock {
     constructor(aid, pid, service, isTransient) {
         this.aid = aid;
         this.pid = pid;
@@ -25,7 +25,7 @@ export class AcceptorClientMock {
     }
 }
 
-export class AcceptorMock {
+class AcceptorMock {
     constructor(ctx, id) {
         this.ctx = ctx;
         this.aid = id;
@@ -119,3 +119,6 @@ export class AcceptorMock {
         }
     }
 }
+
+exports.AcceptorClientMock = AcceptorClientMock;
+exports.AcceptorMock = AcceptorMock;

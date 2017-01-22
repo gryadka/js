@@ -1,6 +1,6 @@
-import fs from "fs";
+const fs = require("fs");
 
-export class LimitedVoid {
+class LimitedVoid {
     static w({limit}) {
         return () => new LimitedVoid(limit);
     }
@@ -36,3 +36,5 @@ export class LimitedVoid {
         }
     }
 }
+
+exports.LimitedVoid = LimitedVoid;

@@ -1,5 +1,4 @@
-
-export class LoggingProxy {
+class LoggingProxy {
     static w({ctx, logger}) {
         return service => new LoggingProxy(ctx, service, logger);
     }
@@ -15,3 +14,5 @@ export class LoggingProxy {
         return response;
     }
 }
+
+exports.LoggingProxy = LoggingProxy;

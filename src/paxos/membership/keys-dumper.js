@@ -1,5 +1,5 @@
-import redisAsyncClient from "../utils/redisAsyncClient"
-import fs from "fs"
+const {redisAsyncClient} = require("../utils/redisAsyncClient");
+const fs = require("fs");
 
 (async function() {
     const settings = JSON.parse(fs.readFileSync(process.argv[2])); 

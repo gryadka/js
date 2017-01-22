@@ -1,20 +1,20 @@
-import {Context} from "../../lib/Context"
+const {Context} = require("../../lib/Context");
 
-import {createProposer, createAcceptors} from "../../lib/Mocks"
-import {IncClient} from "../../lib/clients/IncClient"
-import {IncConsistencyChecker} from "../../lib/clients/IncConsistencyChecker"
-import {isUpdateChangeNoError} from "../../lib/mutators"
-import {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} from "../../lib/clients/exceptions"
+const {createProposer, createAcceptors} = require("../../lib/Mocks");
+const {IncClient} = require("../../lib/clients/IncClient");
+const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker");
+const {isUpdateChangeNoError} = require("../../lib/mutators");
+const {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} = require("../../lib/clients/exceptions");
 
-import {Proxy} from "../../lib/proxies/Proxy"
-import {ShufflingProxy} from "../../lib/proxies/ShufflingProxy"
-import {LoosingProxy} from "../../lib/proxies/LoosingProxy"
-import {LoggingProxy} from "../../lib/proxies/LoggingProxy"
-import {FilteringProxy} from "../../lib/proxies/FilteringProxy"
+const {Proxy} = require("../../lib/proxies/Proxy");
+const {ShufflingProxy} = require("../../lib/proxies/ShufflingProxy");
+const {LosingProxy} = require("../../lib/proxies/LosingProxy");
+const {LoggingProxy} = require("../../lib/proxies/LoggingProxy");
+const {FilteringProxy} = require("../../lib/proxies/FilteringProxy");
 
 const MAX_TIME_DELAY = 1000;
 
-export async function test({seed, logger, intensity=null}) {
+exports.test = async function ({seed, logger, intensity=null}) {
     intensity = intensity || 200;
     intensity = Math.max(intensity, 200);
     const ctx = new Context(MAX_TIME_DELAY, seed);
@@ -28,7 +28,7 @@ export async function test({seed, logger, intensity=null}) {
                 (req.aid == "a2" && req.pid == "p0")
             );
         }}),
-        LoosingProxy.w({ctx: ctx, stability: .8}),
+        LosingProxy.w({ctx: ctx, stability: .8}),
         ShufflingProxy.w({ctx: ctx, base: 3, variance: 10}), 
         LoggingProxy.w({ctx: ctx, logger: logger})
     );

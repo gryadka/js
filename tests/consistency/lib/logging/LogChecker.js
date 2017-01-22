@@ -1,6 +1,6 @@
-import fs from "fs";
+const fs = require("fs");
 
-export class LogChecker {
+class LogChecker {
     static w({path}) {
         return () => new LogChecker(path);
     }
@@ -43,3 +43,5 @@ export class LogChecker {
         }
     }
 }
+
+exports.LogChecker = LogChecker;

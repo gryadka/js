@@ -1,5 +1,4 @@
-
-export class Timer {
+class Timer {
     constructor(max_time_delay) {
         this.ts = 0;
         this.max_time_delay = max_time_delay;
@@ -71,3 +70,5 @@ export class Timer {
         return this.storage.get(delay);
     }
 }
+
+exports.Timer = Timer;

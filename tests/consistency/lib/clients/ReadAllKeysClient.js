@@ -1,8 +1,8 @@
-import {loopOnError, isRetryCountExceedError, retryOnError} from "./exceptions";
-import {initChange, idChange, updateChange, idQuery} from  "../mutators";
-import unwrapOk from "./unwrapOk"
+const {loopOnError, isRetryCountExceedError, retryOnError} = require("./exceptions");
+const {initChange, idChange, updateChange, idQuery} = require("../mutators");
+const {unwrapOk} = require("./unwrapOk");
 
-export class ReadAllKeysClient {
+class ReadAllKeysClient {
     static spawn({ctx, id, proposers, keys, consistencyChecker, recoverableErrors}) {
         const c1 = new ReadAllKeysClient(ctx, consistencyChecker, id, keys, recoverableErrors);
         c1.proposers = [...proposers];
@@ -48,3 +48,5 @@ export class ReadAllKeysClient {
         }
     }
 }
+
+exports.ReadAllKeysClient = ReadAllKeysClient;

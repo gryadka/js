@@ -1,4 +1,4 @@
-import {MultiRequest, MultiPromise} from "../../src/paxos/utils/MultiRequest"
+const {MultiPromise} = require("../../src/paxos/utils/MultiPromise");
 
 async function smokeTest() {
     let p1r = null;

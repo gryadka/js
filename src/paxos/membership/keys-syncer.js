@@ -1,10 +1,10 @@
-import Cache from "../Cache";
-import AcceptorClient from "../AcceptorClient";
-import Proposer from "../Proposer";
-import redisAsyncClient from "../utils/redisAsyncClient";
+const {Cache} = require("../Cache");
+const {AcceptorClient} = require("../AcceptorClient");
+const {Proposer} = require("../Proposer");
+const {redisAsyncClient} = require("../utils/redisAsyncClient");
 
-import fs from "fs"
-import readline from "readline"
+const fs = require("fs");
+const readline = require("readline");
 
 class Syncer {
     start(settings) {

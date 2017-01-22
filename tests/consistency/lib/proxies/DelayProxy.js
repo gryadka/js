@@ -1,5 +1,4 @@
-
-export class DelayProxy {
+class DelayProxy {
     static w(ctx, delay) {
         return service => new DelayProxy(ctx, service, delay);
     }
@@ -23,3 +22,5 @@ export class DelayProxy {
         });
     }
 }
+
+exports.DelayProxy = DelayProxy;

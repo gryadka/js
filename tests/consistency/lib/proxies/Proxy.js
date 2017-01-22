@@ -1,5 +1,4 @@
-
-export class Proxy {
+class Proxy {
     static chain(...factories) {
         return service => {
             const services = [...factories];
@@ -12,4 +11,4 @@ export class Proxy {
     }
 }
 
-
+exports.Proxy = Proxy;

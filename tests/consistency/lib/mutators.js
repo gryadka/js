@@ -1,6 +1,6 @@
-import {log, msg} from "../../../src/paxos/utils/Logging";
+const {log, msg} = require("../../../src/paxos/utils/Logging");
 
-export function updateChange(x) {
+function updateChange(x) {
     return function (state) {
         if (state==null) {
             return [{
@@ -19,7 +19,7 @@ export function updateChange(x) {
     }
 }
 
-export function isUpdateChangeNoError(e) {
+function isUpdateChangeNoError(e) {
     if (!e) return false;
     if (e.status!="NO") return false;
     if (!e.details) return false;
@@ -30,11 +30,11 @@ export function isUpdateChangeNoError(e) {
     return true;
 }
 
-export function idChange (state) {
+function idChange (state) {
     return [state, null];
 }
 
-export function initChange(x) {
+function initChange(x) {
     return function (state) {
         if (state==null) {
             return [{
@@ -47,6 +47,12 @@ export function initChange(x) {
     }
 }
 
-export function idQuery(state) {
+function idQuery(state) {
     return state;
 }
+
+exports.updateChange = updateChange;
+exports.isUpdateChangeNoError = isUpdateChangeNoError;
+exports.idChange = idChange;
+exports.initChange = initChange;
+exports.idQuery = idQuery;

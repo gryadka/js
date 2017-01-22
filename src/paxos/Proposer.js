@@ -1,5 +1,5 @@
-import {MultiPromise} from "./utils/MultiRequest";
-import {log, msg} from "./utils/Logging";
+const {MultiPromise} = require("./utils/MultiPromise");
+const {log, msg} = require("./utils/Logging");
 
 const typedRespondAbstractFactory = respondType => details => ({ "status": respondType, "details": details });
 
@@ -7,7 +7,7 @@ const OK = typedRespondAbstractFactory("OK");
 const NO = typedRespondAbstractFactory("NO");
 const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
 
-export default class Proposer {
+class Proposer {
     constructor(cache, acceptors, quorum) {
         this.cache = cache;
         this.acceptors = acceptors;
@@ -77,3 +77,5 @@ function max(iterable, selector) {
         return selector(acc).compareTo(selector(e)) < 0 ? e : acc
     }, iterable[0]);
 }
+
+exports.Proposer = Proposer;

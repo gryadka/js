@@ -1,6 +1,6 @@
-import {log, msg} from "./Logging";
+const {log, msg} = require("./Logging");
 
-export class MultiPromise {
+class MultiPromise {
     static fromPromises(promises) {
         const mp = new MultiPromise(promises.length);
         for (let promise of promises) {
@@ -70,3 +70,5 @@ export class MultiPromise {
         return this.resolved.filter(x => x.isValid).map(x => x.msg);
     }
 }
+
+exports.MultiPromise = MultiPromise;

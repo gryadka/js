@@ -1,8 +1,6 @@
-import {FailRequestError} from "../../../../src/paxos/utils/MultiRequest"
-
-export class LoosingProxy {
+class LosingProxy {
     static w({ctx, stability}) {
-        return service => new LoosingProxy(ctx, stability, service);
+        return service => new LosingProxy(ctx, stability, service);
     }
     constructor(ctx, stability, service) {
         this.ctx = ctx;
@@ -13,7 +11,9 @@ export class LoosingProxy {
         if (this.ctx.random.random() <= this.stability) {
             return this.service.handler(request);
         } else {
-            return Promise.reject(new FailRequestError());
+            return Promise.reject(new Error());
         }
     }
 }
+
+exports.LosingProxy = LosingProxy;

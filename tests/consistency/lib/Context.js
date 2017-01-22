@@ -1,10 +1,8 @@
-import seedrandom from "seedrandom"
+const seedrandom = require("seedrandom");
+const {Timer} = require( "./Timer");
+const {Random} = require("./Random");
 
-import {Timer} from "./Timer"
-import {Random} from "./Random"
-
-
-export class Context {
+class Context {
     constructor(max_time_delay, seed) {
         this.timer = new Timer(max_time_delay);
         this.random = new Random(seedrandom(seed));
@@ -15,3 +13,5 @@ export class Context {
         return this.id;
     }
 }
+
+exports.Context = Context;

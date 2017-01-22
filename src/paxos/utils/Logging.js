@@ -1,8 +1,8 @@
-export function msg(id) {
+function msg(id) {
     return {"id": id};
 }
 
-export function log() {
+function log() {
     return new Log([]);
 }
 
@@ -14,3 +14,6 @@ class Log {
         return new Log(this.core.concat(item));
     }
 }
+
+exports.msg = msg;
+exports.log = log;

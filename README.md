@@ -19,6 +19,11 @@ but many who tried to implement it run into troubles:
 This dissonance made me wonder so I challenged myself to write a simple Paxos implementation. I took lines of code as
 a measure of simplicity and set a limit of 500 lines of code.
 
+# Examples
+
+Please see the https://github.com/gryadka/js-example repository for an example of web api built on top of Gryadka and 
+its end-to-end testing.
+
 # FAQ
 
 #### How does it differ from Redis Cluster?

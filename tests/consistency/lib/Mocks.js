@@ -1,6 +1,6 @@
 const {AcceptorMock} = require("./Acceptor");
-const {Cache} = require("../../../src/paxos/Cache");
-const {Proposer} = require("../../../src/paxos/Proposer");
+const {Cache} = require("../../../src/Cache");
+const {Proposer} = require("../../../src/Proposer");
 
 function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null}) {
     acceptorClients = createAcceptorClients(Object.assign({}, acceptorClients, { pid: pid }));

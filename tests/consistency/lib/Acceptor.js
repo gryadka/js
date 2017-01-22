@@ -1,4 +1,4 @@
-const {Tick} = require("../../../src/paxos/Tick");
+const {Tick} = require("../../../src/Tick");
 
 class AcceptorClientMock {
     constructor(aid, pid, service, isTransient) {

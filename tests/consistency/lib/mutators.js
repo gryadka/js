@@ -1,4 +1,4 @@
-const {log, msg} = require("../../../src/paxos/utils/Logging");
+const {log, msg} = require("../../../src/utils/Logging");
 
 function updateChange(x) {
     return function (state) {

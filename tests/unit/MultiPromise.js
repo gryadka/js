@@ -1,4 +1,4 @@
-const {MultiPromise} = require("../../src/paxos/utils/MultiPromise");
+const {MultiPromise} = require("../../src/utils/MultiPromise");
 
 async function smokeTest() {
     let p1r = null;

@@ -306,19 +306,19 @@ tests the consistency check on an a priory inconsistent Paxos configuration (thr
 
 ### How to run consistency tests:
 
-Prerequisites: nodejs
+Prerequisites: node-nightly installed globally, see https://www.npmjs.com/package/node-nightly for details
 
 1. Clone this repo
 2. cd gryadka
 3. npm install
-4. ./run-consistency-tests.sh all void seed1
+4. ./bin/run-consistency-tests.sh all void seed1
 
 Instead of "void" one can use "record" to record all events fired in the system during a simulation after it. Another
 alternative is "replay" - it executes the tests and compares current events with previously written events (it was
 useful to check determinism of a simulation).
 
 It takes time to execute all test cases so run-consistency-tests.sh also supports execution of a particular test case: just
-replace "all" with the test's name. Run ./run-consistency-tests.sh without arguments to see which tests are supported.
+replace "all" with the test's name. Run ./bin/run-consistency-tests.sh without arguments to see which tests are supported.
 
 #### Test scenarios
 

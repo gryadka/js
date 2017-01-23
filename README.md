@@ -22,7 +22,7 @@ a measure of simplicity and set a limit of 500 lines of code.
 # Examples
 
 Please see the https://github.com/gryadka/js-example repository for an example of web api built on top of Gryadka and 
-its end-to-end testing.
+its end-to-end consistency testing.
 
 # FAQ
 

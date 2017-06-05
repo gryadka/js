@@ -6,4 +6,4 @@ const {Tick} = require("./src/Tick");
 exports.Cache = Cache;
 exports.AcceptorClient = AcceptorClient;
 exports.Proposer = Proposer;
-exports.Tick;
+exports.Tick = Tick;

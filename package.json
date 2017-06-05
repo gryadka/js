@@ -1,6 +1,6 @@
 {
   "name": "gryadka",
-  "version": "1.61.8",
+  "version": "1.61.9",
   "description": "Gryadka is a minimalistic Paxos-based master-master replicated consistent key/value layer on top of multiple instances of Redis",
   "main": "index.js",
   "dependencies": {

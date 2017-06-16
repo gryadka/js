@@ -6,9 +6,11 @@ Its core has less than 500 lines of code but provides full featured Paxos implem
 features as cluster membership change (ability to add/remove nodes to a cluster) and distinguished proposer optimization 
 (using one round trip to change a value instead of two).
 
-# Why
+#### Is it production ready?
 
-Paxos is a master-master replication protocol. Its inventor, Leslie Lamport wrote that 
+No, it's an educational project and was never intended to be deployed in production. Its goal is to check if it's possible to avoid common pitfalls of implementing a consensus (master-master replication) protocol.
+
+Paxos's author, Leslie Lamport wrote that 
 ["it is among the simplest and most obvious of distributed algorithms"](http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf)
 but many who tried to implement it run into troubles:
 
@@ -16,144 +18,27 @@ but many who tried to implement it run into troubles:
   * ["Paxos is by no means a simple protocol, even though it is based on relatively simple invariants"](http://www.cs.cornell.edu/courses/cs7412/2011sp/paxos.pdf)
   * ["we found few people who were comfortable with Paxos, even among seasoned researchers"](https://raft.github.io/raft.pdf)
 
-This dissonance made me wonder so I challenged myself to write a simple Paxos implementation. I took lines of code as
-a measure of simplicity and set a limit of 500 lines of code.
+This dissonance is the motivation to set the limit on Gryadka's size to force it to be simple.
+
+Even though Gryadka is an educational project, its performance is decent and only 10% behind Etcd (see [the comparison](http://rystsov.info/2017/02/15/simple-consensus.html)).
+
+#### Is it correct?
+
+Yes, it seems so. 
+
+The protocol behind Gryadka (a modification of Paxos) has [an informal proof](http://rystsov.info/2015/09/16/how-paxos-works.html#math1)
+. Tobias Schottdorf [explored](https://tschottdorf.github.io/single-decree-paxos-tla-compare-and-swap) it with TLA+ and Greg Rogers wrote [a TLA+ specification](https://medium.com/@grogepodge/tla-specification-for-gryadka-c80cd625944e) (kudos!).
+
+The implementation was heavily tested with fault injections on the network layer.
 
 # Examples
 
 Please see the https://github.com/gryadka/js-example repository for an example of web api built on top of Gryadka and 
 its end-to-end consistency testing.
 
-# FAQ
-
-#### How does it differ from Redis Cluster?
-
-[Redis Cluster](https://redis.io/topics/cluster-spec) is responsible for sharding and replication while Gryadka pushs 
-sharding to an above layer and focuses only on replication.
-
-Both systems execute a request only when a node executing the request is "connected" to the 
-majority of the cluster. The difference is in the latency/safety trade-off decisions.
-
-Even in the best case Gryadka requires two consequent round-trips: one is between a client and a proposer, another is 
-between the proposer and the acceptors. Meanwhile Redis uses asynchronous replication and requires just one round trip: 
-between a client and the master.
-
-But the better latency has its price, [Redis's docs](https://redis.io/topics/cluster-tutorial) warns us: 
-"Redis Cluster is not able to guarantee strong consistency. In practical terms this means that under certain 
-conditions it is possible that Redis Cluster will lose writes that were acknowledged by the system to the client.".
-
-Gryadka uses Paxos based master-master replication so lost writes and other consistency issues are impossible by 
-design.
-
-#### Is it production ready?
-
-No, it's an educational project and was never intended to be in production. It was created:
-
-  * to practice and hone skills in distributed systems
-  * to demonstrate that Paxos isn't as complex as it is known to be  
-
-Nevertheless Gryadka supports cluster membership change and distinguished proposer optimization so it has all
-the necessary production features.
-
-#### Does it support storages other than Redis?
-
-No, the size of a pluggable storage system would have been of the same magnitude as the Gryadka's current
-Paxos implementation so only Redis is supported.
-
-The good news is that the size of the code is tiny therefore it should be easy to read, to understand and 
-to rewriteit for any storage of your choice.
-
-#### I heard that Raft is simpler than Paxos, why don't you use it?
-
-Raft is a protocol for building replicated consistent persistent append-only log. Paxos has several flavors. 
-Multi-decree Paxos does the same as Raft (log), but Single-decree Paxos replicates atomic variable.
-
-Yes, Raft looks simpler than Multi-decree Paxos, but Single-decree Paxos is simpler than Raft because
-with Paxos all the updates happen in-place and you don't need to implement log truncation and snapshotting.
-
-Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
-enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
-
-#### Why did you choose JavaScript and Redis?
-
-Gryadka is an educational project so I chose 
-[the most popular language](https://github.com/blog/2047-language-trends-on-github) on GitHub and 
-[the most popular key/value storage](http://db-engines.com/en/ranking/key-value+store) (according to db-engines).
-
-#### The project looks awesome, do you need any help?
-
-Sure. The more people can understand Gryadka the better. One way of doing it is to keep code as simple as possible,
-another is to eliminate other barriers:
-
-  * by porting Gryadka from JavaScript to other programming languages
-  * by translating README from English to other human languages       
-
-# Design principle
-
-The main principle of Gryadka is **to get rid of everything that isn't essential to the replication and everything that can be 
-implemented on the client side**. A lot of things which look essential to replication actually can be implemented as 
-an above layer. Among them are transactions, sharding, consistent backup and leader election.  
-
-#### Transactions
-
-There are a lot of papers, articles and libraries covering or building client-side transactions supporting isolation 
-levels from Read Committed to Serializable. Among them are:
-
- * ["Large-scale Incremental Processing Using Distributed Transactions and Notifications"](https://research.google.com/pubs/pub36726.html) by Google
- * ["Scalable Atomic Visibility with RAMP Transactions"](http://www.bailis.org/papers/ramp-sigmod2014.pdf) by UC Berkeley and University of Sydney
- * ["Transactions for Amazon DynamoDB"](https://github.com/awslabs/dynamodb-transactions) by Amazon
- * ["Omid: Transactional Support for HBase"](https://github.com/yahoo/omid) by Yahoo/Apache
- * ["How CockroachDB Does Distributed, Atomic Transactions"](https://www.cockroachlabs.com/blog/how-cockroachdb-distributes-atomic-transactions/) by CockroachLabs
- * ["Perform Two Phase Commit"](https://docs.mongodb.com/manual/tutorial/perform-two-phase-commits/) by MongoDB
-
-It might also be useful to take a look at ["Visualization of RAMP transactions"](http://rystsov.info/2016/04/07/ramp.html) and
-["Visualization of serializable cross shard client-side transactions"](http://rystsov.info/2016/03/02/cross-shard-txs.html). 
-
-#### Consistent backups
-
-An ability to make consistent backups (aka point-in-time backup, consistent cut/snapshots) looks like an essential 
-feature for a consistent storage but many major storages don't support it.
-
-["MongoDB's docs"](https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-filesystem-snapshots/): "On a running production system, you can only capture an approximation of point-in-time snapshot."
-
-["Cassandra's docs"](http://docs.datastax.com/en/archived/cassandra/3.x/cassandra/operations/opsAboutSnapshots.html): "To take a global snapshot, run the nodetool snapshot command using a parallel ssh utility ... This provides an eventually consistent backup. Although no one node is guaranteed to be consistent with its replica nodes at the time a snapshot is taken"
-
-["Riak's docs"](http://docs.basho.com/riak/kv/2.2.0/using/cluster-operations/backing-up/): "backups can become slightly inconsistent from node to node"
-
-Hopefully consistent backups can be implemented on the client side. If a system is based on the actor model and a key/value 
-storage is only used to keep actor's state then it's possible to use [Lai–Yang's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book)
-or [Mattern's algorithm](https://www.cs.uic.edu/~ajayk/DCS-Book) to make consistent snapshots.  
-
-Another approach to snapshotting is to backup each key independently, to keep information about a version of the last 
-backup per each key along with a value and to reject all transactions if they touch keys with different backup versions.
-
-#### Leader election
-
-Naive Paxos implementation uses two round trips between acceptors and proposers to commit a value.
-Of course a proposer can piggy back the next 'prepare' message on the current 'accept' message.
-It effectively reduces the number of round trips from two to one if the next update will be issued
-from the same proposer (otherwise nothing bad happens because Paxos holds consistency in the presence
-of concurrent proposers).  
-
-So the problem of leader election reduces to the problem of how to land most of the user updates to the same
-node. It can be solved on the above layer with [Microsoft Orleans](https://github.com/dotnet/orleans), 
-[Uber RingPop](https://github.com/uber/ringpop-node) or any other consistent hashing routing approach.
-
-#### Sharding
-
-Sharding is a way to split big key space into disjoint smaller key spaces and host each of them on their own
-instance of the system in order to overcome the size limitations. The procedure of splitting and joining
-key spaces should not affect correctness of the concurrent key updates operations.
-
-The straightforward approach is to use transactions to simultaneously put a tombstone to the big key space instance of
-the system and to init smaller key space with the tombed value. Once all the keys are migrated and all the clients
-switch to the new key/space topology then it's safe to drop the tombstoned key/values from the original key space.
-
-So sharding can be also pushed to the client side.
-
 # API
 
-Gryadka's core interface is trivial. It's a `changeQuery` function which takes three arguments:
+Gryadka's core interface is a `changeQuery` function which takes three arguments:
   
   * a `key`
   * a `change` function
@@ -212,22 +97,6 @@ class CASKeyValue {
   }
 }
 ```
-
-## Network
-
-Gryadka exposes its api via an HTTP interface. It's problematic to pass functions via the network therefore
-users should put functions on the server and pass names of the functions instead of them. See the `src/webapi/mutators`
-folder.
-
-The system is distributed and homogeneous so it has several endpoints and all of them are equal. A user can choose any of them
-to invoke the `changeQuery` api; however if all the requests affecting the same `key` land on the same endpoint then
-the distinguished proposer optimization kicks in and the requests run twice faster.
-
-Gryadka is based on remote interactions. Remote interactions significantly differ from local - instead of having two possible 
-outcomes of an operation it has three: 'success', 'failure' and 'unknown'. The latter may be returned when an operation timeouts
-and the true outcome is unknown.
-
-The result of `changeQuery` reflects all those possibilities.
 
 # Consistency
 
@@ -344,3 +213,49 @@ Membership tests check that the consistency holds in the presence of arbitrary n
 |---|---|
 |c2p2k2.a3.a4 | tests a process of migration from 3 acceptors to 4 acceptors |
 |c2p2k2.flux | tests a process of continuous extending/shrinking a cluster between 3 and 4 acceptors |
+
+# FAQ
+
+#### How does it differ from Redis Cluster?
+
+[Redis Cluster](https://redis.io/topics/cluster-spec) is responsible for sharding and replication while Gryadka pushs 
+sharding to an above layer and focuses only on replication.
+
+Both systems execute a request only when a node executing the request is "connected" to the 
+majority of the cluster. The difference is in the latency/safety trade-off decisions.
+
+Even in the best case Gryadka requires two consequent round-trips: one is between a client and a proposer, another is 
+between the proposer and the acceptors. Meanwhile Redis uses asynchronous replication and requires just one round trip: 
+between a client and the master.
+
+But the better latency has its price, [Redis's docs](https://redis.io/topics/cluster-tutorial) warns us: 
+"Redis Cluster is not able to guarantee strong consistency. In practical terms this means that under certain 
+conditions it is possible that Redis Cluster will lose writes that were acknowledged by the system to the client.".
+
+Gryadka uses Paxos based master-master replication so lost writes and other consistency issues are impossible by 
+design.
+
+#### Does it support storages other than Redis?
+
+No, the size of a pluggable storage system would have been of the same magnitude as the Gryadka's current
+Paxos implementation so only Redis is supported.
+
+The good news is that the size of the code is tiny therefore it should be easy to read, to understand and 
+to rewriteit for any storage of your choice.
+
+#### I heard that Raft is simpler than Paxos, why don't you use it?
+
+Raft is a protocol for building replicated consistent persistent append-only log. Paxos has several flavors. 
+Multi-decree Paxos does the same as Raft (log), but Single-decree Paxos replicates atomic variable.
+
+Yes, Raft looks simpler than Multi-decree Paxos, but Single-decree Paxos is simpler than Raft because
+with Paxos all the updates happen in-place and you don't need to implement log truncation and snapshotting.
+
+Of course replicated log is a more powerful data structure than replicated variable, but for a lot of cases it's 
+enough the latter. For example, a key-value storage can be build just with a set of replicated variables.
+
+#### Why did you choose JavaScript and Redis?
+
+Gryadka is an educational project so I chose 
+[the most popular language](https://github.com/blog/2047-language-trends-on-github) on GitHub and 
+[the most popular key/value storage](http://db-engines.com/en/ranking/key-value+store) (according to db-engines).

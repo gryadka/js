@@ -8,10 +8,10 @@ const NO = typedRespondAbstractFactory("NO");
 const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
 
 class Proposer {
-    constructor(cache, acceptors, quorum) {
+    constructor(cache, prepare, accept) {
         this.cache = cache;
-        this.acceptors = acceptors;
-        this.quorum = quorum;
+        this.prepare = prepare;
+        this.accept = accept;
     }
 
     async changeQuery(key, change, query, extra) {
@@ -45,15 +45,15 @@ class Proposer {
     async guessValue(key, extra) {
         const tick = this.cache.tick(key);
         if (!this.cache.isLeader(key)) {
-            const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.prepare(key, tick, extra)));
-            const [ok, err] = await (resp.filter(x => x.msg.isPrepared).atLeast(this.quorum.read));
+            const resp = MultiPromise.fromPromises(this.prepare.nodes.map(x => x.prepare(key, tick, extra)));
+            const [ok, err] = await (resp.filter(x => x.msg.isPrepared).atLeast(this.prepare.quorum));
             if (err) {
                 for (const x of resp.abort().filter(x => x.msg.isConflict)) {
                     this.cache.fastforward(key, x.msg.tick);
                 }
                 return [[null, null], err.append(msg("ERRNO003"))];
             }
-            const value = max(ok.filter(x => !x.acceptor.isTransient), x => x.msg.tick).msg.value;
+            const value = max(ok, x => x.msg.tick).msg.value;
             this.cache.becomeLeader(key, value);
             return [[tick, value], null];
         } else {
@@ -62,8 +62,8 @@ class Proposer {
     }
 
     async commitValue(key, tick, next, extra) {
-        const resp = MultiPromise.fromPromises(this.acceptors.map(x => x.accept(key, tick, next, extra)));
-        const [ok, err3] = await (resp.filter(x => x.msg.isOk).atLeast(this.quorum.write));
+        const resp = MultiPromise.fromPromises(this.accept.nodes.map(x => x.accept(key, tick, next, extra)));
+        const [ok, err3] = await (resp.filter(x => x.msg.isOk).atLeast(this.accept.quorum));
         for (const x of resp.abort().filter(x => x.msg.isConflict)) {
             this.cache.fastforward(key, x.msg.tick);
             this.cache.lostLeadership(key);

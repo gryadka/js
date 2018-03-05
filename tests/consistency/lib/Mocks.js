@@ -2,23 +2,26 @@ const {AcceptorMock} = require("./Acceptor");
 const {Cache} = require("../../../src/Cache");
 const {Proposer} = require("../../../src/Proposer");
 
-function createProposer({pidtime, pid, quorum={read:0, write:0}, acceptorClients=null}) {
-    acceptorClients = createAcceptorClients(Object.assign({}, acceptorClients, { pid: pid }));
-    
+function createProposer({pidtime, pid, network, prepare, accept}) {
     const cache = new Cache(pidtime);
-    const proposer = new Proposer(cache, acceptorClients, quorum);
+
+    prepare = {
+        nodes: prepare.nodes.map(x => x.createClient(pid, network)),
+        quorum: prepare.quorum
+    };
+    accept = {
+        nodes: accept.nodes.map(x => x.createClient(pid, network)),
+        quorum: accept.quorum
+    };
+
+    const proposer = new Proposer(cache, prepare, accept);
     
     return proposer;
 }
 
 function createAcceptors(ctx, ids) {
-    return ids.map(id => new AcceptorMock(ctx, id));
+    return ids.map(aid => new AcceptorMock(ctx, aid));
 }
 
-function createAcceptorClients({pid, network, acceptors, transient}) {
-    return acceptors.map(x => x.createClient(pid, network, transient.has(x.id)));
-}
-
-exports.createAcceptorClients = createAcceptorClients;
 exports.createAcceptors = createAcceptors;
 exports.createProposer = createProposer;

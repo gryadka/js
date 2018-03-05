@@ -1,11 +1,10 @@
 const {Tick} = require("../../../src/Tick");
 
 class AcceptorClientMock {
-    constructor(aid, pid, service, isTransient) {
+    constructor(aid, pid, service) {
         this.aid = aid;
         this.pid = pid;
         this.service = service;
-        this.isTransient = isTransient;
     }
     
     async prepare(key, tick, extra) {
@@ -59,8 +58,8 @@ class AcceptorMock {
         return service.handler(outgoing);
     }
 
-    createClient(pid, serviceWrapper, isTransient) {
-        return new AcceptorClientMock(this.aid, pid, serviceWrapper(this), isTransient);
+    createClient(pid, serviceWrapper) {
+        return new AcceptorClientMock(this.aid, pid, serviceWrapper(this));
     }
 
     handler(request) {

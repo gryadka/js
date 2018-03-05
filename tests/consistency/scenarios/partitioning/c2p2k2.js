@@ -36,12 +36,10 @@ exports.test = async function ({seed, logger, intensity=null}) {
     let acceptors = createAcceptors(ctx, ["a0", "a1", "a2"]);
 
     const ps = Array.from(new Array(2).keys()).map(i => createProposer({
-        pidtime: i, pid: "p"+i, quorum: { read: 2, write: 2 },
-        acceptorClients: {
-            acceptors: acceptors,
-            network: network,
-            transient: new Set([])
-        }
+        network: network,
+        pidtime: i, pid: "p"+i,
+        prepare: {nodes: acceptors, quorum: 2},
+        accept: {nodes: acceptors, quorum: 2}
     }));
 
     const checker = new IncConsistencyChecker();

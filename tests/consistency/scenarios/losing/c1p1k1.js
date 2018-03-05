@@ -22,15 +22,13 @@ exports.test = async function({seed, logger, intensity=null}) {
         LoggingProxy.w({ctx: ctx, logger: logger})
     );
 
-    let acceptors = createAcceptors(ctx, ["a0", "a1", "a2"]);
+    const acceptors = createAcceptors(ctx, ["a0", "a1", "a2"]);
 
     const p1 = createProposer({
-        pidtime: 1, pid: "p1", quorum: { read: 2, write: 2 },
-        acceptorClients: {
-            acceptors: acceptors,
-            network: network,
-            transient: new Set([])
-        }
+        network: network,
+        pidtime: 1, pid: "p1",
+        prepare: {nodes: acceptors, quorum: 2},
+        accept: {nodes: acceptors, quorum: 2}
     });
 
     const c1 = IncClient.spawn({

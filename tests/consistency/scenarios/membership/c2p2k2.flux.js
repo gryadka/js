@@ -4,6 +4,7 @@ const {createProposer, createAcceptors} = require("../../lib/Mocks");
 const {IncClient} = require("../../lib/clients/IncClient");
 const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker");
 const {ReadAllKeysClient} = require("../../lib/clients/ReadAllKeysClient");
+const {AcceptorMock} = require("../../lib/Acceptor");
 
 const {isUpdateChangeNoError} = require("../../lib/mutators");
 const {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} = require("../../lib/clients/exceptions");
@@ -29,18 +30,22 @@ class MembershipFlux {
         this.checker = checker;
         this.network = network;
         this.recoverableErrors = recoverableErrors;
+        this.acceptor = null;
         this.pid = 0;
         this.cid = 0;
         this.rid = 0;
         this.aid = 0;
     }
     
-    mkProposer({ quorum, acceptors, transient = [] }) {
+    mkProposer({ prepare, accept }) {
         const id = (this.pid++);
+
         return createProposer({
-            pidtime: id, pid: "p"+id, quorum: quorum,
-            acceptorClients: { acceptors: acceptors, network: this.network, transient: new Set(transient) }
-        })
+            network: this.network,
+            pidtime: id, pid: "p"+id,
+            prepare: prepare,
+            accept: accept
+        });
     }
 
     mkClient({ proposers }) {
@@ -58,15 +63,22 @@ class MembershipFlux {
     }
 
     mkAcceptor() {
-        return createAcceptors(this.ctx, ["a" + (this.aid++)])[0];
+        return new AcceptorMock(this.ctx, "a" + (this.aid++));
     }
 
     init() {
-        this.acceptors = createAcceptors(this.ctx, ["a0", "a1", "a2"]);
-    
+        this.prepareList = range(3).map(_ => this.mkAcceptor());
+        this.acceptList = [...this.prepareList];
+
         const p2s = [
-            this.mkProposer({quorum: { read: 2, write: 2 }, acceptors: this.acceptors}),
-            this.mkProposer({quorum: { read: 2, write: 2 }, acceptors: this.acceptors})
+            this.mkProposer({
+                prepare: {nodes: this.prepareList, quorum: 2},
+                accept: {nodes: this.acceptList, quorum: 2}
+            }),
+            this.mkProposer({
+                prepare: {nodes: this.prepareList, quorum: 2},
+                accept: {nodes: this.acceptList, quorum: 2}
+            })
         ];
         
         this.clients = [
@@ -77,12 +89,13 @@ class MembershipFlux {
 
     async stretch() {
         const acceptor = this.mkAcceptor();
-        this.acceptors = this.acceptors.concat([ acceptor ]);
+        
+        let prepareList = [...this.prepareList];
+        let acceptList = [...this.acceptList, acceptor];
         
         const p2tr = range(2).map(_ => this.mkProposer({
-            quorum: { read: 3, write: 3 }, 
-            acceptors: this.acceptors, 
-            transient: [acceptor.aid]
+            prepare: {nodes: prepareList, quorum: 2},
+            accept: {nodes: acceptList, quorum: 3}
         }));
 
         const c2tr = [];
@@ -97,9 +110,11 @@ class MembershipFlux {
 
         await (this.mkSyncer({ proposers: p2tr }).thread);
 
+        prepareList = [...acceptList];
+
         const p2last = range(2).map(_ => this.mkProposer({
-            quorum: { read: 3, write: 3 }, 
-            acceptors: this.acceptors
+            prepare: {nodes: prepareList, quorum: 3},
+            accept: {nodes: acceptList, quorum: 3}
         }));
 
         const c2last = [];
@@ -111,18 +126,20 @@ class MembershipFlux {
             c2last.push(fresh);
         }
         this.clients = c2last;
+        this.prepareList = prepareList;
+        this.acceptList = acceptList;
     }
 
     async shrink() {
-        const acceptor = this.ctx.random.anyOf(this.acceptors);
+        const removing = this.ctx.random.anyOf(this.acceptList);
+
+        let prepareList = this.prepareList.filter(x => x != removing);
+        let acceptList = [...this.acceptList];
         
         const p2tr = range(2).map(_ => this.mkProposer({
-            quorum: { read: 3, write: 3 }, 
-            acceptors: this.acceptors, 
-            transient: [acceptor.aid]
+            prepare: {nodes: prepareList, quorum: 2},
+            accept: {nodes: acceptList, quorum: 3}
         }));
-
-        this.acceptors = this.acceptors.filter(x => x != acceptor);
 
         const c2tr = [];
         while (this.clients.length > 0) {
@@ -136,9 +153,11 @@ class MembershipFlux {
 
         await (this.mkSyncer({ proposers: p2tr }).thread);
 
+        acceptList = [...prepareList];
+
         const p2last = range(2).map(_ => this.mkProposer({
-            quorum: { read: 2, write: 2 }, 
-            acceptors: this.acceptors
+            prepare: {nodes: prepareList, quorum: 2},
+            accept: {nodes: acceptList, quorum: 2}
         }));
 
         const c2last = [];
@@ -150,6 +169,8 @@ class MembershipFlux {
             c2last.push(fresh);
         }
         this.clients = c2last;
+        this.prepareList = prepareList;
+        this.acceptList = acceptList;
     }
 }
 

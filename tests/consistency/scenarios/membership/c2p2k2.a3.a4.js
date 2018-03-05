@@ -4,6 +4,7 @@ const {createProposer, createAcceptors} = require("../../lib/Mocks");
 const {IncClient} = require("../../lib/clients/IncClient");
 const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker");
 const {ReadAllKeysClient} = require("../../lib/clients/ReadAllKeysClient");
+const {AcceptorMock} = require("../../lib/Acceptor");
 
 const {isUpdateChangeNoError} = require("../../lib/mutators");
 const {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} = require("../../lib/clients/exceptions");
@@ -39,10 +40,14 @@ exports.test = async function({seed, logger, intensity=null}) {
         isUpdateChangeNoError 
     ];
 
-    const a3s = createAcceptors(ctx, ["a0", "a1", "a2"]);
+    let prepareList = createAcceptors(ctx, ["a0", "a1", "a2"]);
+    let acceptList = [...prepareList];
+    
     const p2a3s = Array.from(new Array(2).keys()).map(i => createProposer({
-        pidtime: i, pid: "p"+i, quorum: { read: 2, write: 2 },
-        acceptorClients: { acceptors: a3s, network: network, transient: new Set([]) }
+        network: network,
+        pidtime: i, pid: "p"+i,
+        prepare: {nodes: prepareList, quorum: 2},
+        accept: {nodes: acceptList, quorum: 2}
     }));
 
     const c1 = IncClient.spawn({
@@ -62,10 +67,13 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     await c2.stop();
 
-    const a4s = a3s.concat(createAcceptors(ctx, ["a3"]));
+    acceptList = [...acceptList, new AcceptorMock(ctx, "a3")]
+
     const p2a3a4s = Array.from(new Array(2).keys()).map(i => createProposer({
-        pidtime: i+2, pid: "p"+(i+2), quorum: { read: 3, write: 3 },
-        acceptorClients: { acceptors: a4s, network: network, transient: new Set(["a3"]) }
+        network: network,
+        pidtime: i+2, pid: "p"+(i+2),
+        prepare: {nodes: prepareList, quorum: 2},
+        accept: {nodes: acceptList, quorum: 3}
     }));
 
     const c3 = IncClient.spawn({
@@ -95,9 +103,13 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     await c3.stop();
 
+    prepareList = [...acceptList];
+
     const p2a4s = Array.from(new Array(2).keys()).map(i => createProposer({
-        pidtime: i+4, pid: "p"+(i+4), quorum: { read: 3, write: 3 },
-        acceptorClients: { acceptors: a4s, network: network, transient: new Set([]) }
+        network: network,
+        pidtime: i+4, pid: "p"+(i+4),
+        prepare: {nodes: prepareList, quorum: 3},
+        accept: {nodes: acceptList, quorum: 3}
     }));
 
     const c5 = IncClient.spawn({

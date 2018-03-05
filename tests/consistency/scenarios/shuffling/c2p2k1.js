@@ -27,12 +27,10 @@ exports.test = async function ({seed, logger, intensity=null}) {
     const ps = [];
     for (let i=1;i<3;i++) {
         ps.push(createProposer({
-            pidtime: i, pid: "p"+i, quorum: { read: 2, write: 2 },
-            acceptorClients: {
-                acceptors: acceptors,
-                network: network,
-                transient: new Set([])
-            }
+            network: network,
+            pidtime: i, pid: "p"+i,
+            prepare: {nodes: acceptors, quorum: 2},
+            accept: {nodes: acceptors, quorum: 2}
         }));
     }
 

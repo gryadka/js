@@ -96,7 +96,7 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const r1 = ReadAllKeysClient.spawn({
         ctx: ctx, id: "r2", proposers: p2a3a4s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     await r1.thread;

@@ -55,6 +55,9 @@ function getErrorChecker(status, errors) {
     };
 }
 
+exports.RetryCountExceedError = RetryCountExceedError
+exports.isRetryCountExceedError = isRetryCountExceedError;
+
 exports.loopOnError = loopOnError;
 exports.retryOnError = retryOnError;
 exports.isRetryCountExceedError = isRetryCountExceedError;

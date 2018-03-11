@@ -1,6 +1,24 @@
 const {AcceptorMock} = require("./Acceptor");
 const {Cache} = require("../../../src/Cache");
 const {ProposerAdapter} = require("./ProposerAdapter");
+const {Proposer} = require("../../../src/Proposer");
+
+function createProposer2({pidtime, pid, network, prepare, accept}) {
+    const cache = new Cache(pidtime);
+
+    prepare = {
+        nodes: prepare.nodes.map(x => x.createClient(pid, network)),
+        quorum: prepare.quorum
+    };
+    accept = {
+        nodes: accept.nodes.map(x => x.createClient(pid, network)),
+        quorum: accept.quorum
+    };
+
+    const proposer = new ProposerAdapter(cache, prepare, accept);
+    
+    return proposer;
+}
 
 function createProposer({pidtime, pid, network, prepare, accept}) {
     const cache = new Cache(pidtime);
@@ -14,7 +32,7 @@ function createProposer({pidtime, pid, network, prepare, accept}) {
         quorum: accept.quorum
     };
 
-    const proposer = new ProposerAdapter(cache, prepare, accept);
+    const proposer = new Proposer(cache, prepare, accept);
     
     return proposer;
 }

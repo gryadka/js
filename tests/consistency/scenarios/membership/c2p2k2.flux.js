@@ -58,7 +58,7 @@ class MembershipFlux {
     mkSyncer({ proposers }) {
         return ReadAllKeysClient.spawn({
             ctx: this.ctx, id: "r" + (this.rid++), proposers: proposers, keys: this.keys,
-            consistencyChecker: this.checker, recoverableErrors: this.recoverableErrors
+            consistencyChecker: this.checker
         });
     }
 

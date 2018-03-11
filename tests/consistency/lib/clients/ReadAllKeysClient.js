@@ -1,77 +1,15 @@
-const {RetryCountExceedError} = require("./exceptions");
 const {ProposerError} = require("../../../../src/Proposer");
 
-/////////
-
-function msg(id) {
-    return {"id": id};
-}
-
-function log() {
-    return new Log([]);
-}
-
-class Log {
-    constructor(core) {
-        this.core = core;
-    }
-    append(item) {
-        return new Log(this.core.concat(item));
+function initOrId(state) {
+    if (state==null) {
+        return {
+            version: 0,
+            value: x
+        }
+    } else {
+        return state;
     }
 }
-
-function initChange(x) {
-    return function (state) {
-        if (state==null) {
-            return [{
-                version: 0,
-                value: x
-            }, null]
-        } else {
-            return [state, null]
-        }
-    }
-}
-
-const typedRespondAbstractFactory = respondType => details => ({ "status": respondType, "details": details });
-
-const NO = typedRespondAbstractFactory("NO");
-const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
-
-async function change(core, key, update, extra) {
-    return await core.change(key, x => {
-        var [val, err] = update(x);
-        if (err != null) {
-            throw err;
-        } else {
-            return val;
-        }
-    }, extra);
-}
-
-/////////
-
-function getErrorChecker(status, errors) {
-    return function(e) {
-        if (!e) return false;
-        if (e.status!=status) return false;
-        if (!e.details) return false;
-        if (e.details.length!=errors.length) return false;
-        for (const id of errors) {
-            if (!e.details.some(x => x.id==id)) return false;
-        }
-        return true;
-    };
-}
-
-const isAcceptUnknownError = getErrorChecker("UNKNOWN", ["ERRNO004","ERRNO009"]);
-const isProposeNoError = getErrorChecker("NO", ["ERRNO003","ERRNO009"]);
-const isConcurrentNoError = getErrorChecker("NO", ["ERRNO002"]);
-const isUpdateChangeNoError = getErrorChecker("NO", ["ERRNO014", "ERRNO005"]);
-
-const recoverableErrors = [ 
-    isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isUpdateChangeNoError 
-]
 
 class ReadAllKeysClient {
     static spawn({ctx, id, proposers, keys, consistencyChecker}) {
@@ -105,7 +43,7 @@ class ReadAllKeysClient {
                                 this.stat.tries++;
                         
                                 let tx = this.consistencyChecker.tx(key);
-                                const read = await change(proposer, key, initChange(0), this.id+":r");
+                                const read = await proposer.change(key, initOrId, this.id+":r");
                                 tx.seen(read);
                                 
                                 this.stat.writes++;

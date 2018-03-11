@@ -14,7 +14,7 @@ class Proposer {
         this.accept = accept;
     }
 
-    async changeQuery(key, change, query, extra) {
+    async change(key, update, extra) {
         if (!this.cache.tryLock(key)) {
             return NO(log().append(msg("ERRNO002")).core);
         }
@@ -24,7 +24,7 @@ class Proposer {
                 return NO(err1.core);
             }
             
-            const [next, err2] = change(curr);
+            const [next, err2] = update(curr);
 
             const [ok, err3] = await this.commitValue(key, tick, next, extra);
             if (err3) {
@@ -36,7 +36,7 @@ class Proposer {
                 return NO(err2.append(msg("ERRNO005")).core);
             }
             
-            return OK(query(next));
+            return OK(next);
         } finally {
             this.cache.unlock(key);
         }

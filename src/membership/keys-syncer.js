@@ -18,7 +18,7 @@ class Syncer {
     }
 
     async sync(key) {
-        return await this.proposer.changeQuery(key, state => [state, null],  x => x);
+        return await this.proposer.change(key, state => [state, null]);
     }
 
     close() {

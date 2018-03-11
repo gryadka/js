@@ -21,14 +21,12 @@ Even though Gryadka is an educational project, its operational characteristics s
 
 # API
 
-Gryadka's core interface is a `changeQuery` function which takes three arguments:
+Gryadka's core interface is a `change` function which takes two arguments:
   
   * a `key`
-  * a `change` function
-  * a `query` function
+  * a `update` function
 
-Internally `changeQuery` gets a value associated with the `key`, applies `change` to calculate a new value, 
-saves it back and returns `query` applied to that new value.
+`change` gets a value associated with the `key`, applies `update` to calculate a new value, saves and returns it.
 
 The pseudo-code:
 
@@ -37,16 +35,15 @@ class Paxos {
   constuctor() {
     this.storage = ...;
   }
-  changeQuery(key, change, query) {
-    const value = change(this.storage.get(key));
+  change(key, update, query) {
+    const value = update(this.storage.get(key));
     this.storage.set(key, value);
-    return query(value);
+    return value;
   }
 }
 ```
 
-By choosing the appropriate change/query functions it's possible to customize Gryadka to fulfill different tasks. 
-A "last write win" key/value could be implemented as:
+By choosing the appropriate update functions it's possible to customize Gryadka to fulfill different tasks. A "last write win" key/value could be implemented as:
 
 ```javascript
 class LWWKeyValue {
@@ -54,10 +51,10 @@ class LWWKeyValue {
     this.paxos = paxos;
   }
   read(key) {
-    return this.paxos.changeQuery(key, x => x, x => x);
+    return this.paxos.change(key, x => x);
   }
   write(key, value) {
-    return this.paxos.changeQuery(key, x => value, x => x);
+    return this.paxos.change(key, x => value);
   }
 }
 ```
@@ -70,13 +67,13 @@ class CASKeyValue {
     this.paxos = paxos;
   }
   read(key) {
-    return this.paxos.changeQuery(key, x => x==null ? { ver: 0, val: null} : x, x => x);
+    return this.paxos.change(key, x => x==null ? { ver: 0, val: null} : x);
   }
   write(key, ver, val) {
-    return this.paxos.changeQuery(key, x => {
+    return this.paxos.change(key, x => {
       if (x.ver != ver) throw new Error();
       return { ver: ver+1, val: val };
-    }, x => x);
+    });
   }
 }
 ```

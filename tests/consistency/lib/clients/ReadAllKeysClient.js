@@ -1,5 +1,5 @@
 const {loopOnError, isRetryCountExceedError, retryOnError} = require("./exceptions");
-const {initChange, idChange, updateChange, idQuery} = require("../mutators");
+const {initChange, updateChange} = require("../mutators");
 const {unwrapOk} = require("./unwrapOk");
 
 class ReadAllKeysClient {
@@ -32,7 +32,7 @@ class ReadAllKeysClient {
                         this.stat.tries++;
                         
                         let tx = this.consistencyChecker.tx(key);
-                        const read = unwrapOk(await proposer.changeQuery(key, initChange(0), idQuery, this.id+":r"));
+                        const read = unwrapOk(await proposer.change(key, initChange(0), this.id+":r"));
                         tx.seen(read);
                         
                         this.stat.writes++;

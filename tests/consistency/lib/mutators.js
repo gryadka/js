@@ -30,10 +30,6 @@ function isUpdateChangeNoError(e) {
     return true;
 }
 
-function idChange (state) {
-    return [state, null];
-}
-
 function initChange(x) {
     return function (state) {
         if (state==null) {
@@ -47,12 +43,6 @@ function initChange(x) {
     }
 }
 
-function idQuery(state) {
-    return state;
-}
-
 exports.updateChange = updateChange;
 exports.isUpdateChangeNoError = isUpdateChangeNoError;
-exports.idChange = idChange;
 exports.initChange = initChange;
-exports.idQuery = idQuery;

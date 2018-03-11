@@ -1,74 +1,49 @@
 const {log, msg} = require("./Logging");
 
-class MultiPromise {
-    static fromPromises(promises) {
-        const mp = new MultiPromise(promises.length);
-        for (let promise of promises) {
-            (async function() {
-                try {
-                    mp.emit({ isValid: true, msg: await promise })
-                } catch(e) {
-                    mp.emit({ isValid: false, msg: null });
-                }
-            })()
-        }
-        return mp;
-    }
-    constructor(expected) {
-        this.expected = expected;
-        this.resolved = [];
-        this.dependents = [];
-    }
-    emit({ isValid, msg }) {
-        this.resolved.push({ isValid, msg });
-        for (let dependent of this.dependents) {
-            dependent({ isValid, msg });
-        }
-    }
-    filter(predicate) {
-        const mp = new MultiPromise(this.expected);
-        const onEvent = ({ isValid, msg }) => { 
-            if (isValid && predicate(msg)) {
-                mp.emit({ isValid, msg });
-            } else {
-                mp.emit({ isValid: false, msg: null });
-            }  
-        };
-        this.dependents.push(onEvent);
-        for (let event of this.resolved) {
-            onEvent(event);
-        }
-        return mp;
-    }
-    atLeast(count) {
-        return new Promise((resolve, _) => {
-            const data = [];
-            let failed = 0;
-            let isResolved = false;
-            const onEvent = event => { 
-                if (isResolved) return;
-                if (event.isValid) {
-                    data.push(event.msg);
-                } else {
-                    failed += 1;
-                }
-                if (count > this.expected - failed) {
-                    isResolved = true;
-                    resolve([null, log().append(msg("ERRNO009"))]);
-                } else if (data.length == count) {
-                    isResolved = true;
-                    resolve([data, null]);
-                }
-            };
-            this.dependents.push(onEvent);
-            for (let event of this.resolved) {
-                onEvent(event);
-            }
-        });
-    }
-    abort() {
-        return this.resolved.filter(x => x.isValid).map(x => x.msg);
+class InsufficientQuorumError extends Error {
+    constructor(code, ...args) {
+        super(...args)
+        this.code = code;
+        Error.captureStackTrace(this, InsufficientQuorumError)
     }
 }
 
-exports.MultiPromise = MultiPromise;
+function waitFor(promises, cond, count) {
+    return new Promise((resolve, reject) => {
+        let failed = 0;
+        let isResolved = false;
+        const result = [];
+        for (let promise of promises) {
+            (async function() {
+                let value = null;
+                let error = false;
+                try {
+                    value = await promise;
+                    if (isResolved) return;
+                    if (!cond(value)) {
+                        error = true;
+                    }
+                } catch (e) {
+                    if (isResolved) return;
+                    error = true;
+                }
+                if (error) {
+                    failed++;
+                    if (count > promises.length - failed) {
+                        isResolved = true;
+                        reject(new InsufficientQuorumError());
+                    }
+                } else {
+                    result.push(value);
+                    if (result.length == count) {
+                        isResolved = true;
+                        resolve(result);
+                    }
+                }
+            })()
+        }
+    });
+}
+
+exports.waitFor = waitFor;
+exports.InsufficientQuorumError = InsufficientQuorumError;

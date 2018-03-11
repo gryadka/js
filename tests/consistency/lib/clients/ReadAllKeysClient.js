@@ -20,25 +20,6 @@ class Log {
     }
 }
 
-function updateChange(x) {
-    return function (state) {
-        if (state==null) {
-            return [{
-                version: x.version, 
-                value: x.value
-            }, null];
-        }
-        if (state.version != x.version) {
-            return [state, log().append(msg("ERRNO014"))]
-        } else {
-            return [{
-                version: state.version+1,
-                value: x.value
-            }, null]
-        }
-    }
-}
-
 function initChange(x) {
     return function (state) {
         if (state==null) {
@@ -52,56 +33,20 @@ function initChange(x) {
     }
 }
 
-async function loopOnError(timer, action, errors) {
-    while (true) {
-        // to put each while's iteration as a new event in the event loop  
-        await timer.yield();
-        try {
-            return await action();
-        } catch(e) {
-            if (errors.some(isError => isError(e))) {
-                continue;
-            }
-            throw e;
-        }
-    }
-}
-
 const typedRespondAbstractFactory = respondType => details => ({ "status": respondType, "details": details });
 
-const OK = typedRespondAbstractFactory("OK");
 const NO = typedRespondAbstractFactory("NO");
 const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
 
 async function change(core, key, update, extra) {
-    try {
-        return OK(await core.change(key, x => {
-            var [val, err] = update(x);
-            if (err != null) {
-                throw err;
-            } else {
-                return val;
-            }
-        }, extra)).details;
-    } catch (e) {
-        if (e instanceof ProposerError) {
-            if (e.code == "ConcurrentRequestError") {
-                return NO(log().append(msg("ERRNO002")).core);
-            }
-            if (e.code == "PrepareError") {
-                return NO(log().append(msg("ERRNO009")).append(msg("ERRNO003")).core);
-            }
-            if (e.code == "CommitError") {
-                return UNKNOWN(log().append(msg("ERRNO009")).append(msg("ERRNO004")).core);
-            }
-            if (e.code == "UpdateError") {
-                return NO(e.err.append(msg("ERRNO005")).core);
-            }
-            throw e;
+    return await core.change(key, x => {
+        var [val, err] = update(x);
+        if (err != null) {
+            throw err;
         } else {
-            throw e;
+            return val;
         }
-    }
+    }, extra);
 }
 
 /////////
@@ -122,22 +67,7 @@ function getErrorChecker(status, errors) {
 const isAcceptUnknownError = getErrorChecker("UNKNOWN", ["ERRNO004","ERRNO009"]);
 const isProposeNoError = getErrorChecker("NO", ["ERRNO003","ERRNO009"]);
 const isConcurrentNoError = getErrorChecker("NO", ["ERRNO002"]);
-
-function isUpdateChangeNoError(e) {
-    if (!e) return false;
-    if (e.status!="NO") return false;
-    if (!e.details) return false;
-    if (e.details.length!=2) return false;
-    for (const id of ["ERRNO014","ERRNO005"]) {
-        if (!e.details.some(x => x.id==id)) return false;
-    }
-    return true;
-}
-
-function isRetryCountExceedError(e) {
-    if (!e) return false;
-    return (e instanceof RetryCountExceedError)
-}
+const isUpdateChangeNoError = getErrorChecker("NO", ["ERRNO014", "ERRNO005"]);
 
 const recoverableErrors = [ 
     isConcurrentNoError, isAcceptUnknownError, isProposeNoError, isUpdateChangeNoError 
@@ -166,35 +96,44 @@ class ReadAllKeysClient {
     async start() {
         try {
             for (const key of this.keys) {
-                await loopOnError(this.ctx.timer, async () => {
-                    const proposer = this.ctx.random.anyOf(this.proposers);
-
-                    await (async function(timer, action, errors, times) {
-                        while (times > 0) {
-                            // to put each while's iteration as a new event in the event loop  
-                            await timer.yield();
+                await (async () => {
+                    while (true) {
+                        const proposer = this.ctx.random.anyOf(this.proposers);
+                        for (let i=0;i<2;i++) {
+                            await this.ctx.timer.yield();
                             try {
-                                times--;
-                                return await action();
+                                this.stat.tries++;
+                        
+                                let tx = this.consistencyChecker.tx(key);
+                                const read = await change(proposer, key, initChange(0), this.id+":r");
+                                tx.seen(read);
+                                
+                                this.stat.writes++;
+                                
+                                return;
                             } catch(e) {
-                                if (errors.some(isError => isError(e))) {
-                                    continue;
+                                if (e instanceof ProposerError) {
+                                    if (e.code == "ConcurrentRequestError") {
+                                        continue;
+                                    }
+                                    if (e.code == "PrepareError") {
+                                        continue;
+                                    }
+                                    if (e.code == "CommitError") {
+                                        continue;
+                                    }
+                                    if (e.code == "UpdateError") {
+                                        continue;
+                                    }
+                                    throw e;
+                                } else {
+                                    throw e;
                                 }
                                 throw e;
                             }
                         }
-                        throw new RetryCountExceedError();
-                    })(this.ctx.timer, async () => {
-                        this.stat.tries++;
-                        
-                        let tx = this.consistencyChecker.tx(key);
-                        const read = await change(proposer, key, initChange(0), this.id+":r");
-                        tx.seen(read);
-                        
-                        this.stat.writes++;
-                    }, recoverableErrors, 2);
-
-                }, [...recoverableErrors, isRetryCountExceedError]);
+                    }
+                })();
             }
         } catch (e) {
             this.error = e;

@@ -1,4 +1,4 @@
-const {log, msg} = require("../../../src/utils/Logging");
+const {log, msg} = require("./Logging");
 
 function updateChange(x) {
     return function (state) {

@@ -1,6 +1,6 @@
 const {AcceptorMock} = require("./Acceptor");
 const {Cache} = require("../../../src/Cache");
-const {Proposer} = require("../../../src/Proposer");
+const {ProposerAdapter} = require("./ProposerAdapter");
 
 function createProposer({pidtime, pid, network, prepare, accept}) {
     const cache = new Cache(pidtime);
@@ -14,7 +14,7 @@ function createProposer({pidtime, pid, network, prepare, accept}) {
         quorum: accept.quorum
     };
 
-    const proposer = new Proposer(cache, prepare, accept);
+    const proposer = new ProposerAdapter(cache, prepare, accept);
     
     return proposer;
 }

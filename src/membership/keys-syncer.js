@@ -1,6 +1,6 @@
 const {Cache} = require("../Cache");
 const {AcceptorClient} = require("../AcceptorClient");
-const {Proposer} = require("../Proposer");
+const {Proposer, ProposerError} = require("../Proposer");
 const {redisAsyncClient} = require("../utils/redisAsyncClient");
 
 const fs = require("fs");
@@ -37,12 +37,17 @@ var keys = fs.readFileSync(process.argv[3]).toString().split("\n").filter(x => x
         syncer = new Syncer().start(settings);
         for (const key of keys) {
             while (true) {
-                const result = await syncer.sync(key);
-                if (result.status=="OK") {
-                    console.info("synced: " + key);
+                try {
+                    await syncer.sync(key);
                     break;
+                } catch (e) {
+                    if (e instanceof ProposerError) {
+                        continue;
+                    } else {
+                        throw e;
+                    }
                 }
-            } 
+            }
         }
         syncer.close();
         console.info("Done");

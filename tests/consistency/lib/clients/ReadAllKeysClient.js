@@ -63,9 +63,6 @@ class ReadAllKeysClient {
                                     if (e.code == "UpdateError") {
                                         continue;
                                     }
-                                    throw e;
-                                } else {
-                                    throw e;
                                 }
                                 throw e;
                             }

@@ -1,10 +1,10 @@
 const {ProposerError} = require("../../../../src/Proposer");
 
-function initOrId(state) {
+function readOrInit(state) {
     if (state==null) {
         return {
             version: 0,
-            value: x
+            value: 0
         }
     } else {
         return state;
@@ -43,7 +43,7 @@ class ReadAllKeysClient {
                                 this.stat.tries++;
                         
                                 let tx = this.consistencyChecker.tx(key);
-                                const read = await proposer.change(key, initOrId, this.id+":r");
+                                const read = await proposer.change(key, readOrInit, this.id+":r");
                                 tx.seen(read);
                                 
                                 this.stat.writes++;

@@ -1,89 +1,34 @@
-const {isRetryCountExceedError, RetryCountExceedError} = require("./exceptions");
-const {initChange, updateChange} = require("../mutators");
+const {ProposerError} = require("../../../../src/Proposer");
 
-/////////
-
-async function loopOnError(timer, action, errors) {
-    while (true) {
-        // to put each while's iteration as a new event in the event loop  
-        await timer.yield();
-        try {
-            return await action();
-        } catch(e) {
-            if (errors.some(isError => isError(e))) {
-                continue;
-            }
-            throw e;
+function setIf(version, value) {
+    return function (state) {
+        if (state==null) {
+            return {
+                version: version, 
+                value: value
+            };
         }
-    }
-}
-
-async function retryOnError(timer, action, errors, times) {
-    while (times > 0) {
-        // to put each while's iteration as a new event in the event loop  
-        await timer.yield();
-        try {
-            times--;
-            return await action();
-        } catch(e) {
-            if (errors.some(isError => isError(e))) {
-                continue;
-            }
-            throw e;
-        }
-    }
-    throw new RetryCountExceedError();
-}
-
-const {log, msg} = require("../Logging");
-const {ProposerError, Proposer} = require("../../../../src/Proposer");
-
-const typedRespondAbstractFactory = respondType => details => ({ "status": respondType, "details": details });
-
-const OK = typedRespondAbstractFactory("OK");
-const NO = typedRespondAbstractFactory("NO");
-const UNKNOWN = typedRespondAbstractFactory("UNKNOWN");
-
-async function change(core, key, update, extra) {
-    try {
-        return OK(await core.change(key, x => {
-            var [val, err] = update(x);
-            if (err != null) {
-                throw err;
-            } else {
-                return val;
-            }
-        }, extra));
-    } catch (e) {
-        if (e instanceof ProposerError) {
-            if (e.code == "ConcurrentRequestError") {
-                return NO(log().append(msg("ERRNO002")).core);
-            }
-            if (e.code == "PrepareError") {
-                return NO(log().append(msg("ERRNO009")).append(msg("ERRNO003")).core);
-            }
-            if (e.code == "CommitError") {
-                return UNKNOWN(log().append(msg("ERRNO009")).append(msg("ERRNO004")).core);
-            }
-            if (e.code == "UpdateError") {
-                return NO(e.err.append(msg("ERRNO005")).core);
-            }
-            throw e;
+        if (state.version != version) {
+            throw new Error("state.version != version");
         } else {
-            throw e;
+            return {
+                version: state.version+1,
+                value: value
+            };
         }
     }
 }
 
-function unwrapOk(obj) {
-    if (obj.status=="OK") {
-        return obj.details;
+function readOrInit(state) {
+    if (state==null) {
+        return {
+            version: 0,
+            value: 0
+        }
     } else {
-        throw obj;
+        return state
     }
 }
-
-/////////
 
 class IncClient {
     static spawn({ctx, id, proposers, keys, consistencyChecker, recoverableErrors}) {
@@ -112,27 +57,50 @@ class IncClient {
         try {
             this.isActive = true;
             while (this.isActive) {
-                await loopOnError(this.ctx.timer, async () => {
-                    const proposer = this.ctx.random.anyOf(this.proposers);
-                    const key = this.ctx.random.anyOf(this.keys);
-                    await retryOnError(this.ctx.timer, async () => {
-                        this.onIterationStarted();
-                        this.stat.tries++;
-                        
-                        let tx = this.consistencyChecker.tx(key);
-                        const read = unwrapOk(await change(proposer, key, initChange(0), this.id+":r"));
-                        tx.seen(read);
+                await (async () => {
+                    while (true) {
+                        const proposer = this.ctx.random.anyOf(this.proposers);
+                        const key = this.ctx.random.anyOf(this.keys);
+                        for (let i=0;i<2;i++) {
+                            await this.ctx.timer.yield();
+                            try {
+                                this.onIterationStarted();
+                                this.stat.tries++;
+                                
+                                let tx = this.consistencyChecker.tx(key);
+                                const read = await proposer.change(key, readOrInit, this.id+":r");
+                                tx.seen(read);
 
-                        tx = this.consistencyChecker.tx(key);
-                        const write = unwrapOk(await change(proposer, key, updateChange({
-                            version: read.version,
-                            value: read.value + 3
-                        }), this.id + ":w"));
-                        tx.seen(write);
-                        
-                        this.stat.writes++;
-                    }, this.recoverableErrors, 2);
-                }, [...this.recoverableErrors, isRetryCountExceedError]);
+                                tx = this.consistencyChecker.tx(key);
+                                const write = await proposer.change(key, setIf(
+                                    read.version,
+                                    read.value + 3
+                                ), this.id + ":w");
+                                tx.seen(write);
+                                
+                                this.stat.writes++;
+
+                                return;
+                            } catch(e) {
+                                if (e instanceof ProposerError) {
+                                    if (e.code == "ConcurrentRequestError") {
+                                        continue;
+                                    }
+                                    if (e.code == "PrepareError") {
+                                        continue;
+                                    }
+                                    if (e.code == "CommitError") {
+                                        continue;
+                                    }
+                                    if (e.code == "UpdateError") {
+                                        continue;
+                                    }
+                                }
+                                throw e;
+                            }
+                        }
+                    }
+                })();
             }
         } catch (e) {
             this.raise(e);

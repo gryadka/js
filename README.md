@@ -35,7 +35,7 @@ class Paxos {
   constuctor() {
     this.storage = ...;
   }
-  change(key, update, query) {
+  change(key, update) {
     const value = update(this.storage.get(key));
     this.storage.set(key, value);
     return value;

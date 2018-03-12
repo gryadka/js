@@ -3,7 +3,6 @@ const {Context} = require("../../lib/Context")
 const {createProposer, createAcceptors} = require("../../lib/Mocks")
 const {IncClient} = require("../../lib/clients/IncClient")
 const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker")
-const {isProposeNoError, isAcceptUnknownError} = require("../../lib/clients/exceptions")
 
 const {Proxy} = require("../../lib/proxies/Proxy")
 const {ShufflingProxy} = require("../../lib/proxies/ShufflingProxy")
@@ -36,8 +35,7 @@ exports.test =  async function({seed, logger, intensity=null}) {
 
     const c1 = IncClient.spawn({
         ctx: ctx, id: "c1", proposers: ps, keys: ["key1", "key2"],
-        consistencyChecker: new IncConsistencyChecker(), 
-        recoverableErrors: [isProposeNoError, isAcceptUnknownError]
+        consistencyChecker: new IncConsistencyChecker()
     });
 
     ctx.timer.start();

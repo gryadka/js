@@ -31,13 +31,13 @@ function readOrInit(state) {
 }
 
 class IncClient {
-    static spawn({ctx, id, proposers, keys, consistencyChecker, recoverableErrors}) {
-        const c1 = new IncClient(ctx, consistencyChecker, id, keys, recoverableErrors);
+    static spawn({ctx, id, proposers, keys, consistencyChecker}) {
+        const c1 = new IncClient(ctx, consistencyChecker, id, keys);
         c1.proposers = [...proposers];
         c1.thread = c1.start();
         return c1;
     }
-    constructor(ctx, consistencyChecker, id, keys, recoverableErrors) {
+    constructor(ctx, consistencyChecker, id, keys) {
         this.ctx = ctx;
         this.consistencyChecker = consistencyChecker;
         this.id = id;
@@ -51,7 +51,6 @@ class IncClient {
             writes: 0
         };
         this.thread = null;
-        this.recoverableErrors = recoverableErrors;
     }
     async start() {
         try {

@@ -6,9 +6,6 @@ const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker
 const {ReadAllKeysClient} = require("../../lib/clients/ReadAllKeysClient");
 const {AcceptorMock} = require("../../lib/Acceptor");
 
-const {isUpdateChangeNoError} = require("../../lib/mutators");
-const {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} = require("../../lib/clients/exceptions");
-
 const {Proxy} = require("../../lib/proxies/Proxy");
 const {ShufflingProxy} = require("../../lib/proxies/ShufflingProxy");
 const {LosingProxy} = require("../../lib/proxies/LosingProxy");
@@ -24,12 +21,11 @@ const progress = async ({client, steps}) => {
 
 
 class MembershipFlux {
-    constructor({ctx, keys, checker, network, recoverableErrors}) {
+    constructor({ctx, keys, checker, network}) {
         this.ctx = ctx;
         this.keys = keys;
         this.checker = checker;
         this.network = network;
-        this.recoverableErrors = recoverableErrors;
         this.acceptor = null;
         this.pid = 0;
         this.cid = 0;
@@ -51,7 +47,7 @@ class MembershipFlux {
     mkClient({ proposers }) {
         return IncClient.spawn({
             ctx: this.ctx, id: "c" + (this.cid++), proposers: proposers, keys: this.keys,
-            consistencyChecker: this.checker, recoverableErrors: this.recoverableErrors
+            consistencyChecker: this.checker
         });
     }
 
@@ -186,11 +182,7 @@ exports.test = async function({seed, logger, intensity=null}) {
             LosingProxy.w({ctx: ctx, stability: .8}),
             ShufflingProxy.w({ctx: ctx, base: 3, variance: 10}), 
             LoggingProxy.w({ctx: ctx, logger: logger})
-        ),
-        recoverableErrors: [ 
-            isConcurrentNoError, isAcceptUnknownError, isProposeNoError, 
-            isUpdateChangeNoError 
-        ]
+        )
     });
 
     flux.init();

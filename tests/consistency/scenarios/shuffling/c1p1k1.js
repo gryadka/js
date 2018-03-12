@@ -31,8 +31,7 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const c1 = IncClient.spawn({
         ctx: ctx, id: "c1", proposers: [p1], keys: ["key1", "key2"],
-        consistencyChecker: new IncConsistencyChecker(), 
-        recoverableErrors: []
+        consistencyChecker: new IncConsistencyChecker()
     });
 
     ctx.timer.start();

@@ -6,9 +6,6 @@ const {IncConsistencyChecker} = require("../../lib/clients/IncConsistencyChecker
 const {ReadAllKeysClient} = require("../../lib/clients/ReadAllKeysClient");
 const {AcceptorMock} = require("../../lib/Acceptor");
 
-const {isUpdateChangeNoError} = require("../../lib/mutators");
-const {isConcurrentNoError, isAcceptUnknownError, isProposeNoError} = require("../../lib/clients/exceptions");
-
 const {Proxy} = require("../../lib/proxies/Proxy");
 const {ShufflingProxy} = require("../../lib/proxies/ShufflingProxy");
 const {LosingProxy} = require("../../lib/proxies/LosingProxy");
@@ -34,11 +31,6 @@ exports.test = async function({seed, logger, intensity=null}) {
     const keys = ["key1", "key2"];
 
     const checker = new IncConsistencyChecker();
-    
-    const recoverableErrors = [ 
-        isConcurrentNoError, isAcceptUnknownError, isProposeNoError, 
-        isUpdateChangeNoError 
-    ];
 
     let prepareList = createAcceptors(ctx, ["a0", "a1", "a2"]);
     let acceptList = [...prepareList];
@@ -52,12 +44,12 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const c1 = IncClient.spawn({
         ctx: ctx, id: "c1", proposers: p2a3s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     const c2 = IncClient.spawn({
         ctx: ctx, id: "c2", proposers: p2a3s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     ctx.timer.start();
@@ -78,7 +70,7 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const c3 = IncClient.spawn({
         ctx: ctx, id: "c3", proposers: p2a3a4s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     await progress({client: c1, steps: 10});
@@ -88,7 +80,7 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const c4 = IncClient.spawn({
         ctx: ctx, id: "c4", proposers: p2a3a4s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     await progress({client: c3, steps: 10});
@@ -114,7 +106,7 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const c5 = IncClient.spawn({
         ctx: ctx, id: "c5", proposers: p2a4s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     await progress({client: c4, steps: 10});
@@ -124,7 +116,7 @@ exports.test = async function({seed, logger, intensity=null}) {
 
     const c6 = IncClient.spawn({
         ctx: ctx, id: "c6", proposers: p2a4s, keys: keys,
-        consistencyChecker: checker, recoverableErrors: recoverableErrors
+        consistencyChecker: checker
     });
 
     await progress({client: c5, steps: 10});

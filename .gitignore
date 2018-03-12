@@ -1,5 +1,3 @@
-node_modules/
+gryadka/node_modules/
+gryadka/package-lock.json
 .DS_Store
-*.log
-.idea
-deployment/

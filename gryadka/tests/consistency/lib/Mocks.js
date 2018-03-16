@@ -1,9 +1,9 @@
 const {AcceptorMock} = require("./Acceptor");
-const {Cache} = require("../../../src/Cache");
+const {BallotNumber} = require("../../../src/BallotNumber");
 const {Proposer} = require("../../../src/Proposer");
 
-function createProposer({pidtime, pid, network, prepare, accept}) {
-    const cache = new Cache(pidtime);
+function createProposer({pid, network, prepare, accept}) {
+    const ballot = new BallotNumber(0, pid);
 
     prepare = {
         nodes: prepare.nodes.map(x => x.createClient(pid, network)),
@@ -14,7 +14,7 @@ function createProposer({pidtime, pid, network, prepare, accept}) {
         quorum: accept.quorum
     };
 
-    const proposer = new Proposer(cache, prepare, accept);
+    const proposer = new Proposer(ballot, prepare, accept);
     
     return proposer;
 }

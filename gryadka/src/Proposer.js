@@ -7,10 +7,8 @@ class ProposerError extends Error {
         return new ProposerError("PrepareError")
     }
 
-    static CommitError(candidate) {
-        const error = new ProposerError("CommitError")
-        error.candidate = candidate;
-        return error;
+    static CommitError() {
+        return new ProposerError("CommitError")
     }
 
     static UpdateError(err) {
@@ -35,18 +33,22 @@ class InsufficientQuorumError extends Error {
 }
 
 class Proposer {
-    constructor(cache, prepare, accept) {
-        this.cache = cache;
+    constructor(ballot, prepare, accept) {
+        this.ballot = ballot;
+
         this.prepare = prepare;
         this.accept = accept;
+
+        this.cache = new Map();
+        this.locks = new Set();
     }
 
     async change(key, update, extra) {
-        if (!this.cache.tryLock(key)) {
+        if (!this.tryLock(key)) {
             throw ProposerError.ConcurrentRequestError();
         }
         try {
-            const [tick, curr] = await this.guessValue(key, extra);
+            const [ballot, curr] = await this.guessValue(key, extra);
 
             let next = curr;
             let error = null;
@@ -56,70 +58,82 @@ class Proposer {
                 error = e;
             }
 
-            await this.commitValue(key, tick, curr, next, extra);
+            const promise = ballot.next();
+
+            await this.commitValue(key, ballot, next, promise, extra);
             
-            this.cache.updateValue(key, next);
+            this.cache.set(key, [promise, next]);
             if (error != null) {
                 throw ProposerError.UpdateError(error);
             }
             
             return next;
         } finally {
-            this.cache.unlock(key);
+            this.unlock(key);
         }
     }
     
     async guessValue(key, extra) {
-        const tick = this.cache.tick(key);
-        if (!this.cache.isLeader(key)) {
+        if (!this.cache.has(key)) {
+            const tick = this.ballot.inc();
             let ok = null;
             try {
                 [ok] = await waitFor(
                     this.prepare.nodes.map(x => x.prepare(key, tick, extra)),
-                    x => x.msg.isPrepared,
+                    x => x.isPrepared,
                     this.prepare.quorum
                 );
             } catch (e) {
                 if (e instanceof InsufficientQuorumError) {
-                    for (const x of e.all.filter(x => x.msg.isConflict)) {
-                        this.cache.fastforward(key, x.msg.tick);
+                    for (const x of e.all.filter(x => x.isConflict)) {
+                        this.ballot.fastforwardAfter(x.ballot);
                     }
                     throw ProposerError.PrepareError();
                 } else {
                     throw e;
                 }
             }
-            const value = max(ok, x => x.msg.tick).msg.value;
-            this.cache.becomeLeader(key, value);
-            return [tick, value];
-        } else {
-            return [tick, this.cache.getValue(key)];
-        }
+            const value = max(ok, x => x.ballot).value;
+            this.cache.set(key, [tick, value]);
+        } 
+        return this.cache.get(key);
     }
 
-    async commitValue(key, tick, curr, next, extra) {
+    async commitValue(key, ballot, value, promise, extra) {
         let ok = null;
         let all = [];
         
         try {
             [ok, all] = await waitFor(
-                this.accept.nodes.map(x => x.accept(key, tick, next, extra)),
-                x => x.msg.isOk,
+                this.accept.nodes.map(x => x.accept(key, ballot, value, promise, extra)),
+                x => x.isOk,
                 this.accept.quorum
             );
         } catch (e) {
             if (e instanceof InsufficientQuorumError) {
                 all = e.all;
-                throw ProposerError.CommitError(curr);
+                throw ProposerError.CommitError();
             } else {
                 throw e;
             }
         } finally {
-            for (const x of all.filter(x => x.msg.isConflict)) {
-                this.cache.fastforward(key, x.msg.tick);
-                this.cache.lostLeadership(key);
+            for (const x of all.filter(x => x.isConflict)) {
+                this.cache.delete(key);
+                this.ballot.fastforwardAfter(x.ballot);
             }
         }
+    }
+
+    tryLock(key) { 
+        if (this.locks.has(key)) {
+            return false;
+        }
+        this.locks.add(key);
+        return true;
+    }
+    
+    unlock(key) { 
+        this.locks.delete(key);
     }
 }
 

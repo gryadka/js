@@ -1,4 +1,4 @@
-const {Tick} = require("../../../src/Tick");
+const {BallotNumber} = require("../../../src/BallotNumber");
 
 class AcceptorClientMock {
     constructor(aid, pid, service) {
@@ -7,20 +7,12 @@ class AcceptorClientMock {
         this.service = service;
     }
     
-    async prepare(key, tick, extra) {
-        const response = await AcceptorMock.sendPrepare(this.aid, this.pid, this.service, key, tick, extra);
-        return {
-            acceptor: this,
-            msg: response.response
-        };
+    async prepare(key, ballot, extra) {
+        return await AcceptorMock.sendPrepare(this.aid, this.pid, this.service, key, ballot, extra);
     }
 
-    async accept(key, tick, state, extra) {
-        const response = await AcceptorMock.sendAccept(this.aid, this.pid, this.service, key, tick, state, extra);
-        return {
-            acceptor: this,
-            msg: response.response
-        };
+    async accept(key, ballot, state, promise, extra) {
+        return await AcceptorMock.sendAccept(this.aid, this.pid, this.service, key, ballot, state, promise, extra);
     }
 }
 
@@ -31,31 +23,32 @@ class AcceptorMock {
         this.storage = new Map();
     }
 
-    static sendPrepare(aid, pid, service, key, tick, extra) {
+    static async sendPrepare(aid, pid, service, key, ballot, extra) {
         const outgoing = {
             id: service.ctx.uuid(),
             aid: aid,
             pid: pid,
             cmd: "prepare",
             key: key, 
-            tick: tick,
+            ballot: ballot,
             extra: extra
         };
-        return service.handler(outgoing);
+        return (await service.handler(outgoing)).response;
     }
 
-    static sendAccept(aid, pid, service, key, tick, state, extra) {
+    static async sendAccept(aid, pid, service, key, ballot, state, promise, extra) {
         const outgoing = {
             id: service.ctx.uuid(),
             aid: aid,
             pid: pid,
             cmd: "accept",
             key: key, 
-            tick: tick,
+            ballot: ballot,
             state: state,
+            promise: promise,
             extra: extra
         };
-        return service.handler(outgoing);
+        return (await service.handler(outgoing)).response;
     }
 
     createClient(pid, serviceWrapper) {
@@ -65,9 +58,9 @@ class AcceptorMock {
     handler(request) {
         let response = null;
         if (request.cmd == "prepare") {
-            response = this.prepare(request.key, request.tick);
+            response = this.prepare(request.key, request.ballot);
         } else if (request.cmd == "accept") {
-            response = this.accept(request.key, request.tick, request.state);
+            response = this.accept(request.key, request.ballot, request.state, request.promise);
         } else {
             throw new Error();
         }
@@ -77,45 +70,53 @@ class AcceptorMock {
         });
     }
     
-    prepare(key, tick) {
+    prepare(key, ballot) {
         if (!this.storage.has(key)) {
             this.storage.set(key, {
-                promise: Tick.zero(),
-                ballot: Tick.zero(),
+                promise: BallotNumber.zero(),
+                ballot: BallotNumber.zero(),
                 value: null
             });
         }
 
         var info = this.storage.get(key);
-        
-        if (info.promise.compareTo(tick) < 0) {
-            info.promise = tick;
-            return { isPrepared: true, tick: info.ballot, value: info.value };
-        } else {
-            return { isConflict: true, tick: info.promise };
+
+        if (info.promise.compareTo(ballot) >= 0) {
+            return { isConflict: true, ballot: info.promise };
         }
+
+        if (info.ballot.compareTo(ballot) >= 0) {
+            return { isConflict: true, ballot: info.ballot };
+        }
+        
+        info.promise = ballot;
+        return { isPrepared: true, ballot: info.ballot, value: info.value };
     }
 
-    accept(key, tick, state) {
+    accept(key, ballot, state, promise) {
          if (!this.storage.has(key)) {
             this.storage.set(key, {
-                promise: Tick.zero(),
-                ballot: Tick.zero(),
+                promise: BallotNumber.zero(),
+                ballot: BallotNumber.zero(),
                 value: null
             });
         }
 
         var info = this.storage.get(key);
-        
-        if (info.promise.compareTo(tick) <= 0) {
-            info.promise = tick;
-            info.ballot = tick;
-            info.value = state;
-            
-            return { isOk: true };
-        } else {
-            return { isConflict: true, tick: info.promise };
+
+        if (info.promise.compareTo(ballot) > 0) {
+            return { isConflict: true, ballot: info.promise };
         }
+
+        if (info.ballot.compareTo(ballot) >= 0) {
+            return { isConflict: true, ballot: info.ballot };
+        }
+        
+        info.promise = promise;
+        info.ballot = ballot;
+        info.value = state;
+        
+        return { isOk: true };
     }
 }
 

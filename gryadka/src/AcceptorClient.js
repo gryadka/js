@@ -4,7 +4,6 @@ const {redisAsyncClient} = require("./utils/redisAsyncClient");
 class AcceptorClient {
     constructor(settings) {
         this.settings = settings;
-        this.isTransient = this.settings.isTransient
     }
     start() {
         this.redis = redisAsyncClient(this.settings.storage.port, this.settings.storage.host);

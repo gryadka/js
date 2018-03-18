@@ -1,22 +1,18 @@
 {
   "name": "gryadka",
   "version": "1.61.10",
-  "description": "Gryadka is a minimalistic Paxos-based master-master replicated consistent key/value layer on top of multiple instances of Redis",
+  "description": "Gryadka is a minimalistic master-master replicated consistent key-value storage based on the CASPaxos protocol",
   "main": "index.js",
   "dependencies": {
     "redis": "2.6.2",
-    "bluebird": "3.4.5",
-    "seedrandom": "2.4.2"
-  },
-  "scripts": {
-    "test": "./bin/run-consistency-tests.sh all void seed42"
+    "bluebird": "3.4.5"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gryadka/js.git"
   },
   "keywords": [
-    "paxos",
+    "caspaxos",
     "redis"
   ],
   "author": "Denis Rystsov <rystsov.denis@gmail.com> (http://rystsov.info/)",

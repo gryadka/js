@@ -1,6 +1,6 @@
 #!/bin/bash
 
-find src \
+find core/src \
 \
   | egrep "\.(js|lua)$" \
 \
@@ -8,7 +8,7 @@ find src \
 \
   | grep total | awk '{print "Paxos:    " $1}'
 
-find tests  \
+find tests/src  \
 \
   | egrep "\.js$" \
 \

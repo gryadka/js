@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /gryadka
+cd /gryadka/emulation
 npm install

@@ -1,7 +1,7 @@
-const {LogWriter} = require("./consistency/lib/logging/LogWriter");
-const {LogChecker} = require("./consistency/lib/logging/LogChecker");
-const {LimitedVoid} = require("./consistency/lib/logging/LimitedVoid");
-const {Void} = require("./consistency/lib/logging/Void");
+const {LogWriter} = require("./lib/logging/LogWriter");
+const {LogChecker} = require("./lib/logging/LogChecker");
+const {LimitedVoid} = require("./lib/logging/LimitedVoid");
+const {Void} = require("./lib/logging/Void");
 
 const CMDS = ["record", "replay", "reduce", "void"];
 const TESTS = [
@@ -38,7 +38,7 @@ async function hole(testselector, seed, intensity) {
 
 async function record(testselector, seed, intensity) {
     try {
-        await execute(testselector, test => new LogWriter(`./tests/consistency/scenarios/${test}.log`), seed, intensity);
+        await execute(testselector, test => new LogWriter(`./tests/scenarios/${test}.log`), seed, intensity);
     } catch(e) {
         console.info(e);
         throw e;
@@ -46,7 +46,7 @@ async function record(testselector, seed, intensity) {
 }
 
 async function replay(testselector, seed, intensity) {
-    await execute(testselector, test => new LogChecker(`./tests/consistency/scenarios/${test}.log`), seed, intensity);
+    await execute(testselector, test => new LogChecker(`./tests/scenarios/${test}.log`), seed, intensity);
 }
 
 async function execute(testselector, loggerFactory, seed, intensity) {
@@ -119,7 +119,7 @@ async function reduce(test, limit, intensity) {
 async function runTest2({test, logger, seed, intensity, extra}) {
     const op = JSON.stringify(Object.assign({ test: test, seed: seed, intensity: intensity }, extra))
     console.info(`# Running ${op}`);
-    await (require(`./consistency/scenarios/${test}`).test)({seed: seed, logger: logger, intensity: intensity});
+    await (require(`./scenarios/${test}`).test)({seed: seed, logger: logger, intensity: intensity});
 }
 
 function assertContains({element, set} = {}) {

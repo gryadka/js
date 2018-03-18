@@ -1,4 +1,4 @@
-const {ProposerError} = require("../../../../src/Proposer");
+const {ProposerError} = require("gryadka");
 
 function setIf(version, value) {
     return function (state) {

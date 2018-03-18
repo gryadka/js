@@ -1,6 +1,5 @@
 const {AcceptorMock} = require("./Acceptor");
-const {BallotNumber} = require("../../../src/BallotNumber");
-const {Proposer} = require("../../../src/Proposer");
+const {BallotNumber, Proposer} = require("gryadka");
 
 function createProposer({pid, network, prepare, accept}) {
     const ballot = new BallotNumber(0, pid);

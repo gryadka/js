@@ -1,4 +1,4 @@
-const {ProposerError} = require("../../../../src/Proposer");
+const {ProposerError} = require("gryadka");
 
 function readOrInit(state) {
     if (state==null) {

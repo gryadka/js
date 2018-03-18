@@ -1,4 +1,4 @@
-const {BallotNumber} = require("../../../src/BallotNumber");
+const {BallotNumber} = require("gryadka");
 
 class AcceptorClientMock {
     constructor(aid, pid, service) {

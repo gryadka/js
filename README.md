@@ -127,7 +127,5 @@ tests the consistency check on an a priory inconsistent Paxos configuration (thr
 Prerequisites: Docker
 
 1. Clone this repo - `git clone https://github.com/gryadka/js.git gryadka`
-2. `cd gryadka`
-3. Build docker image - `./build.sh`
-4. Install dependencies - `./npm-install.sh`
-4. Run tests - `./test.sh`
+2. `cd gryadka/emulation`
+3. Run tests - `./test.sh all void seed14`

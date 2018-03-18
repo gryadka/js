@@ -1,5 +1,5 @@
-const {BallotNumber} = require("./BallotNumber");
-const {redisAsyncClient} = require("./utils/redisAsyncClient");
+const {BallotNumber} = require("../BallotNumber");
+const {redisAsyncClient} = require("./redisAsyncClient");
 
 class AcceptorClient {
     constructor(settings) {
@@ -13,10 +13,10 @@ class AcceptorClient {
     } 
     async prepare(key, ballot, extra) {
         try {
-            const reply = await this.redis.evalshaAsync(this.settings.prepare, 3, key, ballot.counter, ballot.id);
-            const acceptedBallot = new BallotNumber(parseInt(reply[1]), reply[2]);
+            const reply = await this.redis.evalshaAsync(this.settings.prepare, 2, key, ballot.stringify());
+            const acceptedBallot = BallotNumber.parse(reply[1]);
             if (reply[0] === "ok") {
-                const acceptedValue = acceptedBallot.isZero() ? null : JSON.parse(reply[3]).value;
+                const acceptedValue = acceptedBallot.isZero() ? null : JSON.parse(reply[2]).value;
                 return { isPrepared: true, ballot: acceptedBallot, value: acceptedValue };
             } else {
                 return { isConflict: true, ballot: acceptedBallot };
@@ -25,14 +25,14 @@ class AcceptorClient {
             return {isError: true};
         }
     }
-    accept(key, ballot, state, promise, extra) {
+    async accept(key, ballot, state, promise, extra) {
         try {
-            const reply = await this.redis.evalshaAsync(this.settings.accept, 6, key, ballot.counter, ballot.id, JSON.stringify({"value": state}), promise.counter, promise.id);
+            const reply = await this.redis.evalshaAsync(this.settings.accept, 4, key, ballot.stringify(), JSON.stringify({"value": state}), promise.stringify());
             
             if (reply[0] === "ok") {
                 return { isOk: true};
             } else {
-                return { isConflict: true, ballot: new BallotNumber(parseInt(reply[1]), reply[2]) };
+                return { isConflict: true, ballot: BallotNumber.parse(reply[1]) };
             }
         } catch (e) {
             return {isError: true};

@@ -2,6 +2,11 @@ class BallotNumber {
     static zero() {
         return new BallotNumber(0, "");
     }
+
+    static parse(txt) {
+        const [counter, id] = txt.split(",");
+        return new BallotNumber(parseInt(counter), id);
+    }
     
     constructor(counter, id) {
         this.counter = counter;
@@ -23,6 +28,10 @@ class BallotNumber {
 
     fastforwardAfter(tick) {
         this.counter = Math.max(this.counter, tick.counter) + 1;
+    }
+
+    stringify() {
+        return `${this.counter},${this.id}`;
     }
 
     compareTo(tick) {

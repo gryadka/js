@@ -13,7 +13,6 @@ fi
 mkdir -p logs
 
 docker run -i --name=gryadka_node \
-  -v $(pwd)/http-proposer:/gryadka/http-proposer \
   -v $(pwd)/logs:/gryadka/logs \
   --tmpfs /gryadka/mem \
   -t gryadka_node

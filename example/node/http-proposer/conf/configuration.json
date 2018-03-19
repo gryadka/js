@@ -1,0 +1,22 @@
+{
+    "proposerId": "p1",
+    "configVersion": 0,
+    "prepare": {
+        "nodes": [
+            {
+                "host": "127.0.0.1",
+                "port": 6379
+            }
+        ],
+        "quorum": 1
+    },
+    "accept": {
+        "nodes": [
+            {
+                "host": "127.0.0.1",
+                "port": 6379
+            }
+        ],
+        "quorum": 1
+    }
+}

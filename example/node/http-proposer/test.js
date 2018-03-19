@@ -5,7 +5,11 @@ const proposerByConfig = require("./src/proposerByConfig");
 const {ProposerError} = require("gryadka");
 
 (async () => {
-    await startHttpProposer("/gryadka/conf", 8080);
+    if (process.argv.length != 3) {
+        console.info("conf dir is expected as argument");
+        process.exit(1);
+    }
+    await startHttpProposer(process.argv[2], 8080);
 })()
 
 class HttpProposer {

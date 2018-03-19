@@ -1,21 +1,24 @@
 {
-  "name": "gryadka",
-  "version": "1.61.10",
-  "description": "Gryadka is a minimalistic Paxos-based master-master replicated consistent key/value layer on top of multiple instances of Redis",
+  "name": "gryadka-example",
+  "version": "1.61.11",
+  "description": "Testing Gryadka in a simulated environment with fault injection",
   "main": "index.js",
   "dependencies": {
     "gryadka": "file:../core",
     "bluebird": "3.4.5",
-    "seedrandom": "2.4.2"
+    "uuid": "3.2.1",
+    "express": "4.14.0",
+    "body-parser": "1.15.2"
   },
   "scripts": {
-    "test": "./bin/run-consistency-tests.sh all void seed42"
+    "test": "./run.sh all void seed42"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gryadka/js.git"
   },
   "keywords": [
+    "caspaxos",
     "paxos",
     "redis"
   ],

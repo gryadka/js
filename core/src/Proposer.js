@@ -3,7 +3,7 @@ class ProposerError extends Error {
         return new ProposerError("ConcurrentRequestError");
     }
 
-    static PrepareError(err) {
+    static PrepareError() {
         return new ProposerError("PrepareError")
     }
 

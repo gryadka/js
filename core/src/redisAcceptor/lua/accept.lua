@@ -24,14 +24,12 @@ if redis.call('EXISTS', promised_ballot_key) == 0 then
   redis.call('SET', accepted_value_key, "")
 end
 
-local promised = redis.call('GET', promise) 
-
 local promised_ballot = parse_ballot(redis.call('GET', promised_ballot_key))
 local accepted_ballot = parse_ballot(redis.call('GET', accepted_ballot_key))
 local candidate = parse_ballot(KEYS[2])
 local promise = parse_ballot(KEYS[4])
 
-if cmp_ballots(candidate, promised_ballot) <= 0 then
+if cmp_ballots(candidate, promised_ballot) < 0 then
   return {'fail', tostring(promised_ballot[0]) .. "," .. promised_ballot[1] }
 end
 

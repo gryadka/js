@@ -14,7 +14,7 @@ class BallotNumber {
     }
 
     isZero() {
-        return this.parse == 0 && this.id == "";
+        return this.counter == 0 && this.id == "";
     }
 
     inc() {

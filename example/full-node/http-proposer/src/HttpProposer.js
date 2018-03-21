@@ -66,7 +66,7 @@ class HttpProposer {
         res.setHeader('Content-Type', 'application/json');
         if (req.body.configVersion != this.config.configVersion) {
             res.status(400);
-            res.send(JSON.stringify({ code: "ConfigVersionMismatch" }));
+            res.send(JSON.stringify({ "code": "ConfigVersionMismatch" }));
         } else {
             this.isOff = true;
             try {
@@ -75,7 +75,7 @@ class HttpProposer {
                 process.exit(1);
             } catch(e) {
                 res.status(400);
-                res.send(JSON.stringify({ code: "ConfigWriteProblem" }));
+                res.send(JSON.stringify({ "code": "ConfigWriteProblem" }));
                 return;
             }
         }

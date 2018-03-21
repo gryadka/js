@@ -1,0 +1,35 @@
+version: '3'
+services:
+  gryadka1:
+    build: full-node
+    privileged: true
+    container_name: acceptor-proposer-1
+    hostname: acceptor-proposer-1
+    tmpfs: /gryadka/mem
+    networks:
+      - gryadkanet
+    volumes:
+      - ./logs:/gryadka/logs
+  gryadka2:
+    build: full-node
+    privileged: true
+    container_name: acceptor-proposer-2
+    hostname: acceptor-proposer-2
+    tmpfs: /gryadka/mem
+    networks:
+      - gryadkanet
+    volumes:
+      - ./logs:/gryadka/logs
+  gryadka3:
+    build: full-node
+    privileged: true
+    container_name: acceptor-proposer-3
+    hostname: acceptor-proposer-3
+    tmpfs: /gryadka/mem
+    networks:
+      - gryadkanet
+    volumes:
+      - ./logs:/gryadka/logs
+networks:
+  gryadkanet:
+    driver: bridge

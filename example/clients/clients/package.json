@@ -6,9 +6,7 @@
   "dependencies": {
     "gryadka": "file:../core",
     "bluebird": "3.4.5",
-    "uuid": "3.2.1",
-    "express": "4.14.0",
-    "body-parser": "1.15.2"
+    "request": "2.74.0"
   },
   "scripts": {
     "test": "./run.sh all void seed42"

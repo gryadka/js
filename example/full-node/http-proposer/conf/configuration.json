@@ -3,20 +3,18 @@
     "configVersion": 0,
     "prepare": {
         "nodes": [
-            {
-                "host": "127.0.0.1",
-                "port": 6379
-            }
+            { "host": "acceptor-proposer-1", "port": 6379 },
+            { "host": "acceptor-proposer-2", "port": 6379 },
+            { "host": "acceptor-proposer-3", "port": 6379 }
         ],
-        "quorum": 1
+        "quorum": 2
     },
     "accept": {
         "nodes": [
-            {
-                "host": "127.0.0.1",
-                "port": 6379
-            }
+            { "host": "acceptor-proposer-1", "port": 6379 },
+            { "host": "acceptor-proposer-2", "port": 6379 },
+            { "host": "acceptor-proposer-3", "port": 6379 }
         ],
-        "quorum": 1
+        "quorum": 2
     }
 }

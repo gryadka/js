@@ -2,16 +2,27 @@
 
 set -e
 
-cp -r ../lib-http-proposer-api lib-http-proposer-api
+ln -s ../lib-http-proposer-api || true
 
 if ! docker images | grep gryadka_clients; then
   docker build -t="gryadka_clients" .
 fi
 
+if [[ ! -d clients/node_modules ]]; then
+  docker rm gryadka_clients || true
+  docker run -i --name=gryadka_clients \
+  -v $(pwd)/clients:/gryadka/clients \
+  -v $(pwd)/../lib-http-proposer-api:/gryadka/lib-http-proposer-api \
+  --network=example_gryadkanet \
+  -t gryadka_clients \
+  /gryadka/clients/bin/install-npm.sh
+
+  docker rm gryadka_clients
+fi
+
+docker rm gryadka_clients || true
 docker run -i --name=gryadka_clients \
+  -v $(pwd)/clients:/gryadka/clients \
+  -v $(pwd)/../lib-http-proposer-api:/gryadka/lib-http-proposer-api \
   --network=example_gryadkanet \
   -t gryadka_clients
-
-docker rm gryadka_clients
-
-rm -rf lib-http-proposer-api

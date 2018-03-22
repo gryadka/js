@@ -6,8 +6,4 @@ RUN apt-get install -y iputils-ping vim tmux less curl --fix-missing
 RUN /bin/bash -c "curl -sL https://deb.nodesource.com/setup_8.x | bash -"
 RUN apt-get install -y nodejs
 WORKDIR /gryadka
-#COPY lib-http-proposer-api /gryadka/lib-http-proposer-api
-#COPY control /gryadka/control
-#WORKDIR /gryadka/control
-#RUN npm install
 CMD nodejs /gryadka/control/src/test.js

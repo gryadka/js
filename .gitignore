@@ -1,3 +1,5 @@
 node_modules
 package-lock.json
 .DS_Store
+example/node-clients/lib-http-proposer-api
+example/node-control/lib-http-proposer-api

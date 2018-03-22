@@ -10,7 +10,8 @@ async function registerChange(endpoint, name, body) {
                 json: {
                     "name": name,
                     "body": body
-                }
+                },
+                timeout: 1000
             }, 
             (err, res, body) => {
                 if (err) {
@@ -37,12 +38,11 @@ async function change(endpoint, name, key, params) {
                     "name": name,
                     "key": key,
                     "params": params
-                }
+                },
+                timeout: 1000
             }, 
             (err, res, body) => {
                 if (err) {
-                    console.info(err);
-                    console.info(body);
                     reject(new UnexpectedError(err))
                 } else {
                     if (res.statusCode == 404 && body.code == "UnknownChangeFunction") {
@@ -72,7 +72,8 @@ async function getConfiguration(endpoint) {
         request(
             {
                 method: 'get',
-                url: endpoint + "/configuration"
+                url: endpoint + "/configuration",
+                timeout: 1000
             }, 
             (err, res, body) => {
                 if (err) {
@@ -99,7 +100,8 @@ async function postConfiguration(endpoint, config) {
             {
                 method: 'post',
                 url: endpoint + "/configuration",
-                json: config
+                json: config,
+                timeout: 1000
             }, 
             (err, res, body) => {
                 if (err) {

@@ -1,52 +1,73 @@
 const {change, registerChange, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError} = require("lib-http-proposer-api");
 
 (async () => {
-    const endpoints = [
-        "http://acceptor-proposer-1:8080",
-        "http://acceptor-proposer-2:8080",
-        "http://acceptor-proposer-3:8080"
+    const hosts = [
+        {
+            endpoint: "http://acceptor-proposer-1:8080",
+            isAlive: true,
+            lastCheck: 0
+        },
+        {
+            endpoint: "http://acceptor-proposer-2:8080",
+            isAlive: true,
+            lastCheck: 0
+        },
+        {
+            endpoint: "http://acceptor-proposer-3:8080",
+            isAlive: true,
+            lastCheck: 0
+        }
     ];
 
     const keys = ["key1", "key2", "key3", "key4", "key5", "key6", "key4", "key5", "key6"];
 
-    console.info("# proposers: " + endpoints.length);
+    console.info("# proposers: " + hosts.length);
     console.info("# keys: " + keys.length);
     console.info("# clients: " + 3);
     
-    const statA = initStat();
-    const statB = initStat();
-    const statC = initStat();
+    const statA = initStat("#1");
+    const statB = initStat("#2");
+    const statC = initStat("#3");
 
     try {
         const context = { isActive: true };
         dumpProgress(context, [statA, statB, statC]);
-        const taskA = readWriteLoop(endpoints, keys, statA);
-        const taskB = readWriteLoop(endpoints, keys, statB);
-        const taskC = readWriteLoop(endpoints, keys, statC);
+        const taskA = readWriteLoop(hosts, keys, statA);
+        const taskB = readWriteLoop(hosts, keys, statB);
+        const taskC = readWriteLoop(hosts, keys, statC);
         await taskA;
         await taskB;
         await taskC;
-        context.isActive = false;
-        console.info("Client A");
-        console.info(statA);
-        console.info("Client B");
-        console.info(statB);
-        console.info("Client C");
-        console.info(statC);
     } catch (e) {
         console.info(e);
     }
 })();
 
-async function readWriteLoop(endpoints, keys, stat) {
+async function readWriteLoop(hosts, keys, stat) {
     while (true) {
-        const endpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
+        const host = hosts[Math.floor(Math.random() * hosts.length)];
         const key = keys[Math.floor(Math.random() * keys.length)];
+
+        if (!host.isAlive && (stat.time - host.lastCheck) < 10) {
+            if (hosts.some(x => x.isAlive)) {
+                continue;
+            }
+            await new Promise(resolve => {
+                setTimeout(() => resolve(null), 1000);
+            });
+            continue;
+        }
+
+        host.isActive = true;
+        host.lastCheck = stat.time;
+
+        stat.iteration.time = stat.time;
+        stat.iteration.endpoint = host.endpoint;
         
         stat.attempts++;
         try {
-            const stored = await read(endpoint, key, stat.read);
-            const updated = await write(endpoint, key, stored.ver, stored.val + 2, stat.write);
+            const stored = await read(host.endpoint, key, stat.read);
+            const updated = await write(host.endpoint, key, stored.ver, stored.val + 2, stat.write);
             if (updated.ver == stored.ver) {
                 stat.casmiss++;
             } else {
@@ -59,6 +80,26 @@ async function readWriteLoop(endpoints, keys, stat) {
                 continue;
             } else if (e instanceof ConcurrentRequestError) {
                 continue;
+            } else if ((e instanceof UnexpectedError) && e.err.code == "ECONNRESET") {
+                host.isAlive = false;
+                stat.connectivity_issues++;
+                continue;
+            } else if ((e instanceof UnexpectedError) && e.err.code == "ENOTFOUND") {
+                host.isAlive = false;
+                stat.connectivity_issues++;
+                continue;
+            } else if ((e instanceof UnexpectedError) && e.err.code == "ECONNREFUSED") {
+                host.isAlive = false;
+                stat.connectivity_issues++;
+                continue;
+            } else if ((e instanceof UnexpectedError) && e.err.code == "ETIMEDOUT") {
+                host.isAlive = false;
+                stat.connectivity_issues++;
+                continue;
+            } else if ((e instanceof UnexpectedError)) {
+                console.info("#################");
+                console.info(e);
+                throw e;
             }
             throw e;
         }
@@ -123,11 +164,18 @@ async function write(endpoint, key, ver, val, stat) {
     }
 }
 
-function initStat() {
+function initStat(name) {
     return {
+        iteration: {
+            time: 0,
+            endpoint: ""
+        },
         attempts: 0,
         success: 0,
         casmiss: 0,
+        name: name,
+        time: 0,
+        connectivity_issues: 0,
         read: {
             attempts: 0,
             success: 0,
@@ -150,29 +198,37 @@ function initStat() {
 }
 
 async function dumpProgress(context, stats) {
-    console.info("#time [read attempts - read success (write attempts) - write success] x number of clients");
-    const last = [];
-    for (let i=0;i<stats.length;i++) {
-        last[i] = JSON.parse(JSON.stringify(stats[i]));
-    }
-    let tick = 0;
-    while (context.isActive) {
-        let line = "" + tick;
+    try {
+        console.info("#time [read attempts - read success (write attempts) - write success connectivity issues] x number of clients");
+        const last = [];
         for (let i=0;i<stats.length;i++) {
-            const ts = stats[i].success - last[i].success;
-            const ta = stats[i].attempts - last[i].attempts;
-            const rs = stats[i].read.success - last[i].read.success;
-            const ra = stats[i].read.attempts - last[i].read.attempts;
-            const ws = stats[i].write.success - last[i].write.success;
-            const wa = stats[i].write.attempts - last[i].write.attempts;
-
             last[i] = JSON.parse(JSON.stringify(stats[i]));
-            line += `\t[${ra}-${rs}-${ws}]`;
         }
-        console.info(line);
-        await new Promise(resolve => {
-            setTimeout(() => resolve(null), 1000);
-        });
-        tick+=1;
+        let time = 0;
+        while (context.isActive) {
+            for (let i=0;i<stats.length;i++) {
+                stats[i].time = time;
+            }
+            let line = "" + time;
+            for (let i=0;i<stats.length;i++) {
+                const ra = stats[i].read.attempts - last[i].read.attempts;
+                const rs = stats[i].read.success - last[i].read.success;
+                const ws = stats[i].write.success - last[i].write.success;
+
+                const err = stats[i].connectivity_issues - last[i].connectivity_issues;
+
+                line += `\t[${ra}-${rs}-${ws} ${err}]`;
+            }
+            for (let i=0;i<stats.length;i++) {
+                last[i] = JSON.parse(JSON.stringify(stats[i]));
+            }
+            console.info(line);
+            await new Promise(resolve => {
+                setTimeout(() => resolve(null), 1000);
+            });
+            time+=1;
+        }
+    } catch (e) {
+        console.info(e);
     }
 }

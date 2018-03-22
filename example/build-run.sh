@@ -2,8 +2,8 @@
 
 set -e
 
-rm -rf full-node/core
+rm -rf node-full/core
 
-cp -r ../core full-node/core
+cp -r ../core node-full/core
 
 docker-compose up

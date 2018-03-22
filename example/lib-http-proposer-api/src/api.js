@@ -93,6 +93,30 @@ async function getConfiguration(endpoint) {
     });
 }
 
+async function postConfiguration(endpoint, config) {
+    return new Promise((resolve, reject) => {
+        request(
+            {
+                method: 'post',
+                url: endpoint + "/configuration",
+                json: config
+            }, 
+            (err, res, body) => {
+                if (err) {
+                    reject(new UnexpectedError(err));
+                } else {
+                    if (res.statusCode != 200) {
+                        reject(new UnexpectedResponse(res.statusCode, body));
+                    } else {
+                        resolve(null);
+                    }
+                }
+            }
+        );
+    });
+}
+
 exports.change = change;
-exports.getConfiguration = getConfiguration;
 exports.registerChange = registerChange;
+exports.getConfiguration = getConfiguration;
+exports.postConfiguration = postConfiguration;

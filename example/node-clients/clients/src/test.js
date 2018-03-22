@@ -1,5 +1,4 @@
-const {change, registerChange} = require("./api")
-const {UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError} = require("./errors");
+const {change, registerChange, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError} = require("lib-http-proposer-api");
 
 (async () => {
     const endpoints = [

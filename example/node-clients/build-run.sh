@@ -2,9 +2,7 @@
 
 set -e
 
-rm -rf core
-
-cp -r ../../core core
+cp -r ../lib-http-proposer-api lib-http-proposer-api
 
 if ! docker images | grep gryadka_clients; then
   docker build -t="gryadka_clients" .
@@ -16,4 +14,4 @@ docker run -i --name=gryadka_clients \
 
 docker rm gryadka_clients
 
-rm -rf core
+rm -rf lib-http-proposer-api

@@ -1,0 +1,29 @@
+{
+    "name": "lib-http-proposer-api",
+    "version": "1.61.11",
+    "description": "Testing Gryadka in a simulated environment with fault injection",
+    "main": "index.js",
+    "dependencies": {
+      "bluebird": "3.4.5",
+      "request": "2.74.0"
+    },
+    "scripts": {
+      "test": "./run.sh all void seed42"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/gryadka/js.git"
+    },
+    "keywords": [
+      "caspaxos",
+      "paxos",
+      "redis"
+    ],
+    "author": "Denis Rystsov <rystsov.denis@gmail.com> (http://rystsov.info/)",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/gryadka/js/issues"
+    },
+    "homepage": "https://github.com/gryadka/js/blob/master/README.md"
+  }
+  

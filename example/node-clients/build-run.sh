@@ -16,8 +16,6 @@ if [[ ! -d clients/node_modules ]]; then
   --network=example_gryadkanet \
   -t gryadka_clients \
   /gryadka/clients/bin/install-npm.sh
-
-  docker rm gryadka_clients
 fi
 
 docker rm gryadka_clients || true

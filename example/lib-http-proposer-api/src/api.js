@@ -1,5 +1,5 @@
 const request = require("request");
-const {UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError} = require("./errors");
+const {UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("./errors");
 
 async function registerChange(endpoint, name, body) {
     return new Promise((resolve, reject) => {
@@ -55,7 +55,9 @@ async function change(endpoint, name, key, params) {
                         reject(new CommitError());
                     } else if (res.statusCode == 400 && body.code == "ConcurrentRequestError") {
                         reject(new ConcurrentRequestError());
-                    } else if (res.statusCode == 200) {
+                    } else if (res.statusCode == 500 && body.code == "ProposerIsOff") {
+                        reject(new ProposerIsOff());
+                    }  else if (res.statusCode == 200) {
                         resolve(body.value);
                     } else {
                         console.info(body);

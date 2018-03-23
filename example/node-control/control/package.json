@@ -6,7 +6,8 @@
   "dependencies": {
     "lib-http-proposer-api": "file:../lib-http-proposer-api",
     "redis": "2.6.2",
-    "bluebird": "3.4.5"
+    "bluebird": "3.4.5",
+    "gryadka": "file:../core"
   },
   "scripts": {
     "test": "./run.sh all void seed42"

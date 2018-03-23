@@ -10,4 +10,4 @@ redis-cli -h 127.0.0.1 -p 6379 SET prepare $(cat prepare.hash)
 rm accept.hash
 rm prepare.hash
 
-nodejs /gryadka/http-proposer/test.js "/gryadka/http-proposer/conf"
+nodejs /gryadka/http-proposer/test.js "/gryadka/http-proposer/conf" $(hostname)

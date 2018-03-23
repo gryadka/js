@@ -1,5 +1,5 @@
 const {change, registerChange, getConfiguration, postConfiguration} = require("./src/api")
-const {UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError} = require("./src/errors");
+const {UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("./src/errors");
 
 exports.change = change;
 exports.registerChange = registerChange;
@@ -12,3 +12,4 @@ exports.CommitError = CommitError;
 exports.UnknownChangeFunctionError = UnknownChangeFunctionError;
 exports.ConcurrentRequestError = ConcurrentRequestError;
 exports.UpdateError = UpdateError;
+exports.ProposerIsOff = ProposerIsOff;

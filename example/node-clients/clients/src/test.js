@@ -1,4 +1,4 @@
-const {change, registerChange, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError} = require("lib-http-proposer-api");
+const {change, registerChange, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("lib-http-proposer-api");
 
 (async () => {
     const hosts = [
@@ -58,7 +58,7 @@ async function readWriteLoop(hosts, keys, stat) {
             continue;
         }
 
-        host.isActive = true;
+        host.isAlive = true;
         host.lastCheck = stat.time;
 
         stat.iteration.time = stat.time;
@@ -79,6 +79,10 @@ async function readWriteLoop(hosts, keys, stat) {
             } else if (e instanceof CommitError) {
                 continue;
             } else if (e instanceof ConcurrentRequestError) {
+                continue;
+            } else if (e instanceof ProposerIsOff) {
+                host.isAlive = false;
+                stat.connectivity_issues++;
                 continue;
             } else if ((e instanceof UnexpectedError) && e.err.code == "ECONNRESET") {
                 host.isAlive = false;

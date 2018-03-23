@@ -4,17 +4,28 @@ const Config = require("./src/config");
 const proposerByConfig = require("./src/proposerByConfig");
 const HttpProposer = require("./src/HttpProposer");
 
+const proposerIds = new Map([
+    ["acceptor-proposer-1", "p1"],
+    ["acceptor-proposer-2", "p2"],
+    ["acceptor-proposer-3", "p3"]
+]);
+
 (async () => {
-    if (process.argv.length != 3) {
-        console.info("conf dir is expected as argument");
+    if (process.argv.length != 4) {
+        console.info("conf dir and hostname are expected as arguments");
         process.exit(1);
     }
-    await startHttpProposer(process.argv[2], 8080);
+    if (!proposerIds.has(process.argv[3])) {
+        console.info(`unknown host: ${process.argv[3]} can't map to proposerId`);
+        process.exit(1);
+    }
+    await startHttpProposer(proposerIds.get(process.argv[3]), process.argv[2], 8080);
 })()
 
-async function startHttpProposer(dir, port) {
+async function startHttpProposer(proposerId, dir, port) {
     const config = await Config.read(dir);
     config.configVersion+=1;
+    config.proposerId=proposerId
     await Config.write(dir, config);
     const proposer = new HttpProposer(dir, config, proposerByConfig(config));
     

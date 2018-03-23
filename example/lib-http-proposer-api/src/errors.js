@@ -28,6 +28,12 @@ class PrepareError extends Error {
     }
 }
 
+class ProposerIsOff extends Error {
+    constructor() {
+        super()
+    }
+}
+
 class UnexpectedResponseError extends Error {
     constructor(statusCode, body, message) {
         super(message)
@@ -50,3 +56,4 @@ exports.CommitError = CommitError;
 exports.UnknownChangeFunctionError = UnknownChangeFunctionError;
 exports.ConcurrentRequestError = ConcurrentRequestError;
 exports.UpdateError = UpdateError;
+exports.ProposerIsOff = ProposerIsOff;

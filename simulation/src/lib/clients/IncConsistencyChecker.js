@@ -1,10 +1,9 @@
-function ConsistencyViolation(info) {
-    this.info = info;
-    this.name = 'ConsistencyViolation';
-    this.stack = (new Error()).stack;
+class ConsistencyViolation extends Error {
+    constructor(code) {
+        super()
+        Error.captureStackTrace(this, ConsistencyViolation)
+    }
 }
-ConsistencyViolation.prototype = Object.create(Error.prototype);
-ConsistencyViolation.prototype.constructor = ConsistencyViolation;
 
 class IncConsistencyChecker {
     static isConsistencyViolation(e) {

@@ -1,5 +1,5 @@
 #!/bin/bash
 
 rm -rf node_modules
-docker rm gryadka_emulation
-docker image rm gryadka_emulation
+docker rm gryadka_simulation
+docker image rm gryadka_simulation

@@ -1,5 +1,8 @@
+const redis = require("redis");
+const Promise = require("bluebird");
 const {BallotNumber} = require("../BallotNumber");
-const {redisAsyncClient} = require("./redisAsyncClient");
+
+Promise.promisifyAll(redis.RedisClient.prototype);
 
 class AcceptorClient {
     constructor(host, port) {
@@ -18,7 +21,7 @@ class AcceptorClient {
         
         let client = null;
         try {
-            client = redisAsyncClient(this.port, this.host);
+            client = redis.createClient({port: this.port, host: this.host, retry_strategy: options=>2000});
             this.prepareHash = await client.getAsync("prepare");
             this.acceptHash = await client.getAsync("accept");
         } catch(e) {

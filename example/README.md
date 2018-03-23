@@ -7,7 +7,7 @@ The system consists of 6 nodes:
   * A control node with scripts for manually changing the number of acceptors from three to four without interrupting the clients
   * A standing by acceptor node.
 
-## How to run the cluster
+## How to run the cluster and change its configuration
 
 Open terminal with this project, `cd example` and `./build-run.sh` to run the full nodes and a standby acceptor.
 

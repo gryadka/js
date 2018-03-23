@@ -1,12 +1,10 @@
 Gryadka is a minimalistic master-master replicated consistent key-value storage based on the [CASPaxos](https://arxiv.org/abs/1802.07000) protocol. It uses Redis as a backend and makes multiple Redis instances work as a whole tolerating up to F failures out of 2F+1 nodes.
 
-Its core has less than 500 lines of code but provides full featured Paxos implementation supporting such advance features as cluster membership change (ability to add/remove nodes to a cluster) and distinguished proposer optimization (using one round trip to change a value instead of two).
+Its core has less than 500 lines of code but provides full-featured Paxos implementation supporting such advanced features as cluster membership change (ability to add/remove nodes to a cluster) and distinguished proposer optimization (using one round trip to change a value instead of two).
 
 #### Is it correct?
 
-Yes, it seems so.
-
-The protocol has formal proof (see the CASPaxos paper) and TLA+ models independently written by Greg Rogers and Tobias Schottdorf:
+Yes, the protocol has formal proof (see the CASPaxos paper) and TLA+ models independently written by Greg Rogers and Tobias Schottdorf:
 
   * [A TLA+ specification for Gryadka](https://medium.com/@grogepodge/tla-specification-for-gryadka-c80cd625944e)
   * [Paxos on Steroids and a Crash Course in TLA+](https://tschottdorf.github.io/single-decree-paxos-tla-compare-and-swap)
@@ -15,7 +13,7 @@ Moreover, the implementation was heavily tested with fault injections on the net
 
 #### Is it production ready?
 
-No, it's an educational project and it was never intended to be deployed in production. The goal of the project is to build master-master replicated consistent key-value storage as simple as possible.
+No, it's an educational project, and it was never intended to be deployed in production. The goal of the project is to build master-master replicated consistent key-value storage as simple as possible.
 
 Even though Gryadka is an educational project, its operational characteristics surpass established databases (see [the comparison](https://github.com/rystsov/perseus)).
 
@@ -43,7 +41,7 @@ class Paxos {
 }
 ```
 
-By choosing the appropriate update functions it's possible to customize Gryadka to fulfill different tasks. A "last write win" key/value could be implemented as:
+By choosing the appropriate update functions, it's possible to customize Gryadka to fulfill different tasks. A "last write win" key/value could be implemented as:
 
 ```javascript
 class LWWKeyValue {
@@ -78,13 +76,15 @@ class CASKeyValue {
 }
 ```
 
-## Examples
+# Dockerized example of cluster membership change
 
-Please see the https://github.com/gryadka/js-example repository for an example of web api built on top of Gryadka.
+Please see https://github.com/gryadka/js/tree/master/example for an example of:
 
-# Cluster membership change
+  * Dockerized Gryadka-based cluster
+  * Using Gryadka to build a HTTP key-value storage
+  * Cluster membership change
 
-Please find information on membership change in the CASPaxos paper. The procedure was tested in the following tests:
+Additional information about cluster membership change is in the CASPaxos paper and in the simulation tests:
 
 |Name | Description|
 |---|---|
@@ -96,8 +96,17 @@ Please find information on membership change in the CASPaxos paper. The procedur
 Testing is done by mocking the network layer and checking consistency invariants during various 
 network fault injections such as message dropping and message reordering.
 
-Each test scenario uses seed-able randomization so all test's random decisions are determined by 
-its initial value (seed) and user can replay any test and expect the same outcome.
+Each test scenario uses seed-able randomization, so all test's random decisions are determined by 
+its initial value (seed) and the user can replay any test and expect the same outcome.
+
+### How to run consistency tests:
+
+Prerequisites: Docker
+
+1. Clone this repo - `git clone https://github.com/gryadka/js.git gryadka`
+2. `cd gryadka/simulation`
+3. Run tests - `./build-run.sh all void seed14`
+
 
 ### Invariants
 
@@ -105,7 +114,7 @@ The following situation is one of the examples of a consistency violation:
 
 1. Alice reads a value
 2. Alice tells Bob the observed value via an out of the system channel (a rumor)
-3. Bob reads a value but the system returns a value which is older than the rumor 
+3. Bob reads a value, but the system returns a value which is older than the rumor 
 
 It gives a hint how to check linearizability:
 
@@ -117,15 +126,7 @@ It gives a hint how to check linearizability:
 * Clients run in the same process concurrently and spread rumors instantly after each read or write operation
 * Once a client observed a value (through the read or write operation) she checks that it's equal or newer than the one known through rumors on the moment the operation started
 
-This procedure already helped to find a couple of consistency bugs so it works :)  
+This procedure already helped to find a couple of consistency bugs, so it works :)  
 
-In order to avoid a degradation of the consistency test to `return true;` there is the `losing/c2p2k1.i` test which
-tests the consistency check on an a priory inconsistent Paxos configuration (three acceptors with quorums of size 1).  
-
-### How to run consistency tests:
-
-Prerequisites: Docker
-
-1. Clone this repo - `git clone https://github.com/gryadka/js.git gryadka`
-2. `cd gryadka/emulation`
-3. Run tests - `./test.sh all void seed14`
+To avoid degradation of the consistency test to `return true;` there is the `losing/c2p2k1.i` test which
+tests the consistency check on a priory inconsistent Paxos configuration (three acceptors with quorums of size 1).

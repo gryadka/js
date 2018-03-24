@@ -43,13 +43,19 @@ exports.test = async function({seed, logger, intensity=null}) {
         clients.push(client);
     }
 
-    ctx.timer.start();
+    checker.onConsistencyViolation(e => {
+        for (const client of clients) {
+            client.raise(e);
+        }
+    });
 
     logger.onError(e => {
         for (const client of clients) {
             client.raise(e);
         }
     });
+
+    ctx.timer.start();
 
     for (const client of clients) {
         await client.wait(x => x.stat.writes >= intensity);

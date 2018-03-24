@@ -52,12 +52,17 @@ exports.test = async function ({seed, logger, intensity=null}) {
         consistencyChecker: checker
     });
 
-    ctx.timer.start();
+    checker.onConsistencyViolation(e => {
+        c1.raise(e);
+        c2.raise(e);
+    });
 
     logger.onError(e => {
         c1.raise(e);
         c2.raise(e);
     });
+
+    ctx.timer.start();
 
     while (true) {
         hasNetworkIssues = !hasNetworkIssues;

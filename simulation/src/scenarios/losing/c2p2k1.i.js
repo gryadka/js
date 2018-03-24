@@ -1,7 +1,7 @@
 const {Context} = require("../../lib/Context");
 
 const {createProposer, createAcceptors} = require("../../lib/Mocks");
-const {IncClient} = require("../../lib/clients/IncClient");
+const {IncClient, CompositeError, FinishedCoroutineError} = require("../../lib/clients/IncClient");
 const {IncConsistencyChecker, ConsistencyViolation} = require("../../lib/clients/IncConsistencyChecker");
 
 const {Proxy} = require("../../lib/proxies/Proxy");
@@ -13,6 +13,7 @@ const MAX_TIME_DELAY = 1000;
 
 exports.test = async function ({seed, logger, intensity=null}) {
     try {
+        
         intensity = intensity || 1000;
         const ctx = new Context(MAX_TIME_DELAY, seed);
 
@@ -41,25 +42,41 @@ exports.test = async function ({seed, logger, intensity=null}) {
             ctx: ctx, id: "c2", proposers: ps, keys: ["key1"], consistencyChecker: checker
         });
 
-        ctx.timer.start();
+        checker.onConsistencyViolation(e => {
+            c1.raise(e);
+            c2.raise(e);
+        });
 
         logger.onError(e => {
             c1.raise(e);
             c2.raise(e);
         });
 
+        ctx.timer.start();
+
         await c1.wait(x => x.stat.writes >= intensity);
         await c2.wait(x => x.stat.writes >= intensity);
         await c1.stop();
         await c2.stop();
         await ctx.timer.thread;
-
-        console.info("You should have seen consistency violation :(");
+    
     } catch (e) {
-        if (e instanceof ConsistencyViolation) {
-            console.info("consistency violation!")
+        if (e instanceof FinishedCoroutineError) {
+            try { await ctx.timer.thread; } catch(e) { }
+
+            console.info("Can't wait/stop on finished coroutine.");
+            throw e;
+        } else if (e instanceof CompositeError) {
+            if (e.errors.length == 1 && e.errors[0] instanceof ConsistencyViolation) {
+                try { await ctx.timer.thread; } catch(e) { }
+                return;
+            }
+            throw e;
         } else {
+            console.info("Only FinishedCoroutineError and CompositeError are allowed. Any other exception indicates about the errors in simulation process.");
             throw e;
         }
     }
+
+    throw new Error("Consistency violation was expected :(");
 }

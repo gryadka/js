@@ -28,9 +28,27 @@ exports.test = async function({seed, logger, intensity=null}) {
         await client.wait(x => x.stat.writes > writes + steps);
     };
 
+    const clients = [];
+    const register = client => {
+        clients.push(client);
+        return client;
+    }
+
     const keys = ["key1", "key2"];
 
     const checker = new IncConsistencyChecker();
+
+    checker.onConsistencyViolation(e => {
+        for (const client of clients) {
+            client.raise(e);
+        }
+    });
+
+    logger.onError(e => {
+        for (const client of clients) {
+            client.raise(e);
+        }
+    });
 
     let prepareList = createAcceptors(ctx, ["a0", "a1", "a2"]);
     let acceptList = [...prepareList];
@@ -42,15 +60,15 @@ exports.test = async function({seed, logger, intensity=null}) {
         accept: {nodes: acceptList, quorum: 2}
     }));
 
-    const c1 = IncClient.spawn({
+    const c1 = register(IncClient.spawn({
         ctx: ctx, id: "c1", proposers: p2a3s, keys: keys,
         consistencyChecker: checker
-    });
+    }));
 
-    const c2 = IncClient.spawn({
+    const c2 = register(IncClient.spawn({
         ctx: ctx, id: "c2", proposers: p2a3s, keys: keys,
         consistencyChecker: checker
-    });
+    }));
 
     ctx.timer.start();
 
@@ -68,20 +86,20 @@ exports.test = async function({seed, logger, intensity=null}) {
         accept: {nodes: acceptList, quorum: 3}
     }));
 
-    const c3 = IncClient.spawn({
+    const c3 = register(IncClient.spawn({
         ctx: ctx, id: "c3", proposers: p2a3a4s, keys: keys,
         consistencyChecker: checker
-    });
+    }));
 
     await progress({client: c1, steps: 10});
     await progress({client: c3, steps: 10});
 
     await c1.stop();
 
-    const c4 = IncClient.spawn({
+    const c4 = register(IncClient.spawn({
         ctx: ctx, id: "c4", proposers: p2a3a4s, keys: keys,
         consistencyChecker: checker
-    });
+    }));
 
     await progress({client: c3, steps: 10});
     await progress({client: c4, steps: 10});
@@ -104,20 +122,20 @@ exports.test = async function({seed, logger, intensity=null}) {
         accept: {nodes: acceptList, quorum: 3}
     }));
 
-    const c5 = IncClient.spawn({
+    const c5 = register(IncClient.spawn({
         ctx: ctx, id: "c5", proposers: p2a4s, keys: keys,
         consistencyChecker: checker
-    });
+    }));
 
     await progress({client: c4, steps: 10});
     await progress({client: c5, steps: 10});
 
     await c4.stop();
 
-    const c6 = IncClient.spawn({
+    const c6 = register(IncClient.spawn({
         ctx: ctx, id: "c6", proposers: p2a4s, keys: keys,
         consistencyChecker: checker
-    });
+    }));
 
     await progress({client: c5, steps: 10});
     await progress({client: c6, steps: 10});

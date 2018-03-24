@@ -21,16 +21,28 @@ const progress = async ({client, steps}) => {
 
 
 class MembershipFlux {
-    constructor({ctx, keys, checker, network}) {
+    constructor({ctx, keys, logger, network}) {
         this.ctx = ctx;
         this.keys = keys;
-        this.checker = checker;
+        this.checker = new IncConsistencyChecker();
+        this.checker.onConsistencyViolation(e => {
+            for(const client of this.historicalClients) {
+                client.raise(e);
+            }
+        });
+        logger.onError(e => {
+            for (const client of this.historicalClients) {
+                client.raise(e);
+            }
+        });
         this.network = network;
         this.acceptor = null;
         this.pid = 0;
         this.cid = 0;
         this.rid = 0;
         this.aid = 0;
+        this.clients = [];
+        this.historicalClients = [];
     }
     
     mkProposer({ prepare, accept }) {
@@ -45,10 +57,12 @@ class MembershipFlux {
     }
 
     mkClient({ proposers }) {
-        return IncClient.spawn({
+        const client = IncClient.spawn({
             ctx: this.ctx, id: "c" + (this.cid++), proposers: proposers, keys: this.keys,
             consistencyChecker: this.checker
         });
+        this.historicalClients.push(client);
+        return client;
     }
 
     mkSyncer({ proposers }) {
@@ -77,10 +91,8 @@ class MembershipFlux {
             })
         ];
         
-        this.clients = [
-            this.mkClient({ proposers: p2s }),
-            this.mkClient({ proposers: p2s })
-        ];
+        this.clients.push(this.mkClient({ proposers: p2s }));
+        this.clients.push(this.mkClient({ proposers: p2s }));
     }
 
     async stretch() {
@@ -177,7 +189,7 @@ exports.test = async function({seed, logger, intensity=null}) {
     const flux = new MembershipFlux({
         ctx: ctx,
         keys: ["key1", "key2"],
-        checker: new IncConsistencyChecker(),
+        logger: logger,
         network: Proxy.chain(
             LosingProxy.w({ctx: ctx, stability: .8}),
             ShufflingProxy.w({ctx: ctx, base: 3, variance: 10}), 

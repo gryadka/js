@@ -31,16 +31,19 @@ exports.test =  async function({seed, logger, intensity=null}) {
             prepare: {nodes: acceptors, quorum: 2},
             accept: {nodes: acceptors, quorum: 2}
         }));
-    } 
+    }
+
+    const checker = new IncConsistencyChecker();
 
     const c1 = IncClient.spawn({
         ctx: ctx, id: "c1", proposers: ps, keys: ["key1", "key2"],
-        consistencyChecker: new IncConsistencyChecker()
+        consistencyChecker: checker
     });
 
-    ctx.timer.start();
-
+    checker.onConsistencyViolation(e => c1.raise(e));
     logger.onError(x => c1.raise(x));
+
+    ctx.timer.start();
 
     await c1.wait(x => x.stat.writes >= intensity);
     await c1.stop();

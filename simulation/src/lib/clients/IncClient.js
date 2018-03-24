@@ -1,5 +1,20 @@
 const {ProposerError} = require("gryadka");
 
+class CompositeError extends Error {
+    constructor(errors) {
+        super()
+        this.errors = errors;
+        Error.captureStackTrace(this, CompositeError)
+    }
+}
+
+class FinishedCoroutineError extends Error {
+    constructor() {
+        super()
+        Error.captureStackTrace(this, CompositeError)
+    }
+}
+
 function setIf(version, value) {
     return function (state) {
         if (state==null) {
@@ -34,7 +49,7 @@ class IncClient {
     static spawn({ctx, id, proposers, keys, consistencyChecker}) {
         const c1 = new IncClient(ctx, consistencyChecker, id, keys);
         c1.proposers = [...proposers];
-        c1.thread = c1.start();
+        c1.start();
         return c1;
     }
     constructor(ctx, consistencyChecker, id, keys) {
@@ -43,18 +58,21 @@ class IncClient {
         this.id = id;
         this.keys = keys;
         this.proposers = [];
-        this.isActive = false;
+        
+        this.errors = [];
+        this.isActive = true;
+        this.hasFinished = false;
+        this.stopHandlers = new Set();
+
         this.conditions = new Set();
-        this.error = null;
         this.stat = {
             tries: 0,
             writes: 0
         };
-        this.thread = null;
     }
+    
     async start() {
         try {
-            this.isActive = true;
             while (this.isActive) {
                 await (async () => {
                     while (true) {
@@ -102,29 +120,56 @@ class IncClient {
                 })();
             }
         } catch (e) {
-            this.raise(e);
-            throw e;
+            this.errors.push(e);
         }
-        if (this.error) {
-            throw this.error;
-        }
-    }
-    async stop() {
+
         this.isActive = false;
-        await this.thread;
+        this.hasFinished = true;
+
+        if (this.errors.length > 0) {
+            const error = new CompositeError(this.errors);
+            for (let condition of this.conditions) {
+                condition.reject(error);
+            }
+            this.conditions = new Set();
+            for (let stopHandler of this.stopHandlers) {
+                stopHandler.reject(error);
+            }
+        } else {
+            for (let condition of this.conditions) {
+                condition.reject(new FinishedCoroutineError());
+            }
+            this.conditions = new Set();
+            for (let stopHandler of this.stopHandlers) {
+                stopHandler.resolve(true);
+            }
+            this.stopHandlers = new Set();
+        }
     }
+
+    stop() {
+        return new Promise((resolve,reject) => {
+            if (this.hasFinished) {
+                reject(new FinishedCoroutineError());
+            } else {
+                this.isActive = false;
+                this.stopHandlers.add({
+                    resolve: resolve,
+                    reject: reject
+                });
+            }
+        });
+    }
+
     raise(e) {
         this.isActive = false;
-        this.error = e;
-        for (let condition of this.conditions) {
-            condition.reject(e);
-        }
-        this.conditions = new Set();
+        this.errors.push(e);
     }
+    
     wait(condition) {
         return new Promise((resolve, reject) => {
-            if (this.error) {
-                reject(this.error);
+            if (this.hasFinished) {
+                reject(new FinishedCoroutineError());
             } else {
                 this.conditions.add({
                     check: condition,
@@ -151,4 +196,6 @@ class IncClient {
     }
 }
 
-exports.IncClient = IncClient; 
+exports.IncClient = IncClient;
+exports.CompositeError = CompositeError;
+exports.FinishedCoroutineError = FinishedCoroutineError;

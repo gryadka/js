@@ -40,12 +40,17 @@ exports.test = async function ({seed, logger, intensity=null}) {
         ctx: ctx, id: "c2", proposers: ps, keys: ["key1", "key2"], consistencyChecker: checker
     });
 
-    ctx.timer.start();
+    checker.onConsistencyViolation(e => {
+        c1.raise(e);
+        c2.raise(e);
+    });
 
     logger.onError(e => {
         c1.raise(e);
         c2.raise(e);
     });
+
+    ctx.timer.start();
 
     await c1.wait(x => x.stat.writes >= intensity);
     await c2.wait(x => x.stat.writes >= intensity);

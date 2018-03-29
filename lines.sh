@@ -1,14 +1,22 @@
 #!/bin/bash
 
-find core/src \
+find gryadka-core/src \
 \
   | egrep "\.(js|lua)$" \
 \
   | xargs wc -l \
 \
-  | grep total | awk '{print "Paxos:    " $1}'
+  | grep total | awk '{print "gryadka-core:    " $1}'
 
-find tests/src  \
+find gryadka-redis/src \
+\
+  | egrep "\.(js|lua)$" \
+\
+  | xargs wc -l \
+\
+  | grep total | awk '{print "gryadka-redis:    " $1}'
+
+find simulation/src  \
 \
   | egrep "\.js$" \
 \

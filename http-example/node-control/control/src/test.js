@@ -3,7 +3,7 @@ const Promise = require("bluebird");
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 
-const {change, registerChange, getConfiguration, postConfiguration, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("lib-http-proposer-api");
+const {change, registerChange, getConfiguration, postConfiguration, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("gryadka-example-http-proposer-client");
 
 class RetryLimitExhausted extends Error {
     constructor() {

@@ -1,10 +1,10 @@
 {
-  "name": "gryadka-example-proposer",
-  "version": "1.61.11",
-  "description": "Testing Gryadka in a simulated environment with fault injection",
+  "name": "gryadka-example-clients",
+  "version": "1.61.12",
+  "description": "Clients constantly reading/writing data from http proposers",
   "main": "index.js",
   "dependencies": {
-    "lib-http-proposer-api": "file:../lib-http-proposer-api",
+    "gryadka-example-http-proposer-client": "file:../lib-http-proposer-api",
     "redis": "2.6.2",
     "bluebird": "3.4.5"
   },

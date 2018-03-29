@@ -1,6 +1,6 @@
 {
   "name": "gryadka-simulation",
-  "version": "1.61.11",
+  "version": "1.61.12",
   "description": "Testing Gryadka in a simulated environment with fault injection",
   "main": "index.js",
   "dependencies": {
@@ -9,7 +9,7 @@
     "seedrandom": "2.4.2"
   },
   "scripts": {
-    "test": "./run.sh all void seed42"
+    "test": "./build-run.sh all void seed42"
   },
   "repository": {
     "type": "git",

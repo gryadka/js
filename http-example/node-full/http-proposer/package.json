@@ -1,7 +1,7 @@
 {
-  "name": "gryadka-example-proposer",
-  "version": "1.61.11",
-  "description": "Testing Gryadka in a simulated environment with fault injection",
+  "name": "gryadka-example-http-proposer",
+  "version": "1.61.12",
+  "description": "Gryadka's HTTP example API",
   "main": "index.js",
   "dependencies": {
     "gryadka-core": "file:../gryadka-core",
@@ -11,9 +11,7 @@
     "express": "4.14.0",
     "body-parser": "1.15.2"
   },
-  "scripts": {
-    "test": "./run.sh all void seed42"
-  },
+  "scripts": { },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gryadka/js.git"

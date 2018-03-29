@@ -1,4 +1,4 @@
-const {change, registerChange, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("lib-http-proposer-api");
+const {change, registerChange, UnexpectedError, UnexpectedResponseError, PrepareError, CommitError, UnknownChangeFunctionError, ConcurrentRequestError, UpdateError, ProposerIsOff} = require("gryadka-example-http-proposer-client");
 
 (async () => {
     const hosts = [

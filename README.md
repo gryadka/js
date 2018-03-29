@@ -78,7 +78,7 @@ class CASKeyValue {
 
 # Dockerized example of cluster membership change
 
-Please see https://github.com/gryadka/js/tree/master/example for an example of:
+Please see https://github.com/gryadka/js/tree/master/http-example for an example of:
 
   * Dockerized Gryadka-based cluster
   * Using Gryadka to build a HTTP key-value storage

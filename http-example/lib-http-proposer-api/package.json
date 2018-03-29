@@ -1,15 +1,13 @@
 {
-    "name": "lib-http-proposer-api",
-    "version": "1.61.11",
-    "description": "Testing Gryadka in a simulated environment with fault injection",
+    "name": "gryadka-example-http-proposer-client",
+    "version": "1.61.12",
+    "description": "Client library of the Gryadka's HTTP example API (node-full/http-proposer)",
     "main": "index.js",
     "dependencies": {
       "bluebird": "3.4.5",
       "request": "2.74.0"
     },
-    "scripts": {
-      "test": "./run.sh all void seed42"
-    },
+    "scripts": { },
     "repository": {
       "type": "git",
       "url": "git+https://github.com/gryadka/js.git"

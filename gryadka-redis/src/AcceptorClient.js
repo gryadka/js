@@ -4,8 +4,8 @@ const Promise = require("bluebird");
 Promise.promisifyAll(redis.RedisClient.prototype);
 
 class AcceptorClient {
-    constructor(host, port, ballotNumberParser) {
-        this.ballotNumberParser = ballotNumberParser;
+    constructor(host, port, parseBallotNumber) {
+        this.parseBallotNumber = parseBallotNumber;
         this.host = host;
         this.port = port;
         this.redis = null;
@@ -46,7 +46,7 @@ class AcceptorClient {
         try {
             const client = await this.connect();
             const reply = await client.evalshaAsync(this.prepareHash, 2, key, ballot.stringify());
-            const acceptedBallot = this.ballotNumberParser(reply[1]);
+            const acceptedBallot = this.parseBallotNumber(reply[1]);
             if (reply[0] === "ok") {
                 const acceptedValue = acceptedBallot.isZero() ? null : JSON.parse(reply[2]).value;
                 return { isPrepared: true, ballot: acceptedBallot, value: acceptedValue };
@@ -66,7 +66,7 @@ class AcceptorClient {
             if (reply[0] === "ok") {
                 return { isOk: true};
             } else {
-                return { isConflict: true, ballot: this.ballotNumberParser(reply[1]) };
+                return { isConflict: true, ballot: this.parseBallotNumber(reply[1]) };
             }
         } catch (e) {
             this.reset();

@@ -1,4 +1,4 @@
-const {ProposerError} = require("gryadka");
+const {ProposerError} = require("gryadka-core");
 
 class CompositeError extends Error {
     constructor(errors) {

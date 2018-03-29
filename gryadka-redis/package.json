@@ -1,24 +1,19 @@
 {
-  "name": "gryadka-example-proposer",
-  "version": "1.61.11",
-  "description": "Testing Gryadka in a simulated environment with fault injection",
+  "name": "gryadka-redis",
+  "version": "1.61.12",
+  "description": "Implementation of Gryadka's acceptor based on Redis",
   "main": "index.js",
   "dependencies": {
-    "lib-http-proposer-api": "file:../lib-http-proposer-api",
     "redis": "2.6.2",
-    "bluebird": "3.4.5",
-    "gryadka": "file:../core"
-  },
-  "scripts": {
-    "test": "./run.sh all void seed42"
+    "bluebird": "3.4.5"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gryadka/js.git"
   },
   "keywords": [
+    "gryadka",
     "caspaxos",
-    "paxos",
     "redis"
   ],
   "author": "Denis Rystsov <rystsov.denis@gmail.com> (http://rystsov.info/)",

@@ -1,4 +1,4 @@
-const {ProposerError} = require("gryadka");
+const {ProposerError} = require("gryadka-core");
 const Config = require("./config");
 
 class HttpProposer {
@@ -20,6 +20,7 @@ class HttpProposer {
         try {
             change = eval(req.body.body);
         } catch(e) {
+            console.info(e);
             res.setHeader('Content-Type', 'application/json');
             res.status(400);
             res.send(JSON.stringify({ "code": "CantEvalBody" }));
@@ -31,11 +32,13 @@ class HttpProposer {
     async change(req, res) {
         res.setHeader('Content-Type', 'application/json');
         if (this.isOff) {
+            console.info("ProposerIsOff");
             res.status(500);
             res.send(JSON.stringify({ "code": "ProposerIsOff" }));
             return;
         }
         if (!this.changes.has(req.body.name)) {
+            console.info("UnknownChangeFunction");
             res.status(404);
             res.send(JSON.stringify({ "code": "UnknownChangeFunction" }));
         } else {
@@ -44,6 +47,7 @@ class HttpProposer {
             try {
                 state = await this.proposer.change(req.body.key, change(req.body.params));
             } catch(e) {
+                console.info(e);
                 res.setHeader('Content-Type', 'application/json');
                 res.status(400);
                 if (e instanceof ProposerError) {

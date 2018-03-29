@@ -1,12 +1,12 @@
 {
-  "name": "gryadka-simulation",
+  "name": "gryadka-example-proposer",
   "version": "1.61.11",
   "description": "Testing Gryadka in a simulated environment with fault injection",
   "main": "index.js",
   "dependencies": {
-    "gryadka-core": "file:../gryadka-core",
-    "bluebird": "3.4.5",
-    "seedrandom": "2.4.2"
+    "lib-http-proposer-api": "file:../lib-http-proposer-api",
+    "redis": "2.6.2",
+    "bluebird": "3.4.5"
   },
   "scripts": {
     "test": "./run.sh all void seed42"

@@ -1,5 +1,5 @@
 const {AcceptorMock} = require("./Acceptor");
-const {BallotNumber, Proposer} = require("gryadka");
+const {BallotNumber, Proposer} = require("gryadka-core");
 
 function createProposer({pid, network, prepare, accept}) {
     const ballot = new BallotNumber(0, pid);

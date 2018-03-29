@@ -13,7 +13,7 @@ if [[ ! -d clients/node_modules ]]; then
   docker run -i --name=gryadka_clients \
   -v $(pwd)/clients:/gryadka/clients \
   -v $(pwd)/../lib-http-proposer-api:/gryadka/lib-http-proposer-api \
-  --network=example_gryadkanet \
+  --network=httpexample_gryadkanet \
   -t gryadka_clients \
   /gryadka/clients/bin/install-npm.sh
 fi
@@ -22,5 +22,5 @@ docker rm gryadka_clients || true
 docker run -i --name=gryadka_clients \
   -v $(pwd)/clients:/gryadka/clients \
   -v $(pwd)/../lib-http-proposer-api:/gryadka/lib-http-proposer-api \
-  --network=example_gryadkanet \
+  --network=httpexample_gryadkanet \
   -t gryadka_clients

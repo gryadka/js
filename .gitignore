@@ -1,5 +1,8 @@
 node_modules
 package-lock.json
 .DS_Store
-example/node-clients/lib-http-proposer-api
-example/node-control/lib-http-proposer-api
+http-example/node-clients/lib-http-proposer-api
+http-example/node-control/lib-http-proposer-api
+http-example/node-full/gryadka-core
+http-example/node-full/gryadka-redis
+http-example/node-acceptor/gryadka-redis

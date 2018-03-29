@@ -1,11 +1,18 @@
 {
-  "name": "gryadka",
+  "name": "gryadka-example-proposer",
   "version": "1.61.11",
-  "description": "Gryadka is a minimalistic master-master replicated consistent key-value storage based on the CASPaxos protocol",
+  "description": "Testing Gryadka in a simulated environment with fault injection",
   "main": "index.js",
   "dependencies": {
-    "redis": "2.6.2",
-    "bluebird": "3.4.5"
+    "gryadka-core": "file:../gryadka-core",
+    "gryadka-redis": "file:../gryadka-redis",
+    "bluebird": "3.4.5",
+    "uuid": "3.2.1",
+    "express": "4.14.0",
+    "body-parser": "1.15.2"
+  },
+  "scripts": {
+    "test": "./run.sh all void seed42"
   },
   "repository": {
     "type": "git",
@@ -13,6 +20,7 @@
   },
   "keywords": [
     "caspaxos",
+    "paxos",
     "redis"
   ],
   "author": "Denis Rystsov <rystsov.denis@gmail.com> (http://rystsov.info/)",

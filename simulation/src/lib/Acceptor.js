@@ -1,4 +1,4 @@
-const {BallotNumber} = require("gryadka");
+const {BallotNumber} = require("gryadka-core");
 
 class AcceptorClientMock {
     constructor(aid, pid, service) {

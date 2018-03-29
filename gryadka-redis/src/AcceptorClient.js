@@ -25,8 +25,6 @@ class AcceptorClient {
             this.prepareHash = await client.getAsync("prepare");
             this.acceptHash = await client.getAsync("accept");
         } catch(e) {
-            console.info("connecting")
-            console.info(e);
             try { client.quit(); } catch(_) {}
             throw e;
         } finally {
@@ -47,20 +45,15 @@ class AcceptorClient {
     async prepare(key, ballot, extra) {
         try {
             const client = await this.connect();
-            console.info(`prepare(${key}, ${ballot.stringify()})`);
             const reply = await client.evalshaAsync(this.prepareHash, 2, key, ballot.stringify());
             const acceptedBallot = this.ballotNumberParser(reply[1]);
             if (reply[0] === "ok") {
-                console.info("acceptedBallot");
-                console.info("\"" + acceptedBallot.stringify() + "\"");
                 const acceptedValue = acceptedBallot.isZero() ? null : JSON.parse(reply[2]).value;
                 return { isPrepared: true, ballot: acceptedBallot, value: acceptedValue };
             } else {
                 return { isConflict: true, ballot: acceptedBallot };
             }
         } catch (e) {
-            console.info("preparing")
-            console.info(e);
             this.reset();
             return {isError: true};
         }
@@ -68,20 +61,14 @@ class AcceptorClient {
     async accept(key, ballot, state, promise, extra) {
         try {
             const client = await this.connect();
-            console.info(`accept(${key}, ${ballot.stringify()}, ${JSON.stringify({"value": state})}, ${promise.stringify()})`);
             const reply = await client.evalshaAsync(this.acceptHash, 4, key, ballot.stringify(), JSON.stringify({"value": state}), promise.stringify());
             
             if (reply[0] === "ok") {
-                console.info("accepted: ok");
                 return { isOk: true};
             } else {
-                console.info(`accepted: conflict: ${reply[0]} - ${reply[1]}`);
-                console.info(`my: ${ballot.stringify()}`);
                 return { isConflict: true, ballot: this.ballotNumberParser(reply[1]) };
             }
         } catch (e) {
-            console.info("accepting");
-            console.info(e);
             this.reset();
             return {isError: true};
         }

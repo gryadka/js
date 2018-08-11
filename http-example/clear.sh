@@ -1,7 +1,6 @@
 #!/bin/bash
 
-rm -rf node-full/gryadka-core
-rm -rf node-full/gryadka-redis
+rm -rf node-proposer/gryadka-core
 rm -rf node-acceptor/gryadka-redis
 rm -rf logs
 

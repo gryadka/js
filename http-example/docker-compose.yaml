@@ -1,40 +1,48 @@
 version: '3'
 services:
-  gryadka1:
-    build: node-full
+  proposer1:
+    build: node-proposer
     privileged: true
-    container_name: acceptor-proposer-1
-    hostname: acceptor-proposer-1
+    container_name: proposer-1
+    hostname: proposer-1
     tmpfs:
-      - /gryadka/mem
       - /gryadka/logs
     networks:
       - gryadkanet
-  gryadka2:
-    build: node-full
+  proposer2:
+    build: node-proposer
     privileged: true
-    container_name: acceptor-proposer-2
-    hostname: acceptor-proposer-2
+    container_name: proposer-2
+    hostname: proposer-2
     tmpfs:
-      - /gryadka/mem
       - /gryadka/logs
     networks:
       - gryadkanet
-  gryadka3:
-    build: node-full
-    privileged: true
-    container_name: acceptor-proposer-3
-    hostname: acceptor-proposer-3
-    tmpfs:
-      - /gryadka/mem
-      - /gryadka/logs
-    networks:
-      - gryadkanet
-  gryadka4:
+  acceptor1:
     build: node-acceptor
     privileged: true
-    container_name: acceptor-4
-    hostname: acceptor-4
+    container_name: acceptor-1
+    hostname: acceptor-1
+    tmpfs:
+      - /gryadka/mem
+      - /gryadka/logs
+    networks:
+      - gryadkanet
+  acceptor2:
+    build: node-acceptor
+    privileged: true
+    container_name: acceptor-2
+    hostname: acceptor-2
+    tmpfs:
+      - /gryadka/mem
+      - /gryadka/logs
+    networks:
+      - gryadkanet
+  acceptor3:
+    build: node-acceptor
+    privileged: true
+    container_name: acceptor-3
+    hostname: acceptor-3
     tmpfs:
       - /gryadka/mem
       - /gryadka/logs

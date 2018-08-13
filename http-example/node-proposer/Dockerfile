@@ -7,6 +7,7 @@ RUN /bin/bash -c "curl -sL https://deb.nodesource.com/setup_8.x | bash -"
 RUN apt-get install -y nodejs
 WORKDIR /gryadka
 COPY gryadka-core /gryadka/gryadka-core
+COPY gryadka-redis /gryadka/gryadka-redis
 COPY http-proposer /gryadka/http-proposer
 WORKDIR /gryadka/http-proposer
 RUN npm install

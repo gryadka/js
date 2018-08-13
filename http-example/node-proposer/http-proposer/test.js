@@ -5,9 +5,8 @@ const proposerByConfig = require("./src/proposerByConfig");
 const HttpProposer = require("./src/HttpProposer");
 
 const proposerIds = new Map([
-    ["acceptor-proposer-1", "p1"],
-    ["acceptor-proposer-2", "p2"],
-    ["acceptor-proposer-3", "p3"]
+    ["proposer-1", "p1"],
+    ["proposer-2", "p2"]
 ]);
 
 (async () => {

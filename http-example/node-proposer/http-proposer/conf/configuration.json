@@ -2,19 +2,11 @@
     "proposerId": "PROPOSERID",
     "configVersion": 0,
     "prepare": {
-        "nodes": [
-            { "host": "acceptor-proposer-1", "port": 6379 },
-            { "host": "acceptor-proposer-2", "port": 6379 },
-            { "host": "acceptor-proposer-3", "port": 6379 }
-        ],
-        "quorum": 2
+        "nodes": [],
+        "quorum": 0
     },
     "accept": {
-        "nodes": [
-            { "host": "acceptor-proposer-1", "port": 6379 },
-            { "host": "acceptor-proposer-2", "port": 6379 },
-            { "host": "acceptor-proposer-3", "port": 6379 }
-        ],
-        "quorum": 2
+        "nodes": [],
+        "quorum": 0
     }
 }

@@ -3,17 +3,12 @@ const {change, registerChange, UnexpectedError, UnexpectedResponseError, Prepare
 (async () => {
     const hosts = [
         {
-            endpoint: "http://acceptor-proposer-1:8080",
+            endpoint: "http://proposer-1:8080",
             isAlive: true,
             lastCheck: 0
         },
         {
-            endpoint: "http://acceptor-proposer-2:8080",
-            isAlive: true,
-            lastCheck: 0
-        },
-        {
-            endpoint: "http://acceptor-proposer-3:8080",
+            endpoint: "http://proposer-2:8080",
             isAlive: true,
             lastCheck: 0
         }
@@ -84,11 +79,16 @@ async function readWriteLoop(hosts, keys, stat) {
                 host.isAlive = false;
                 stat.connectivity_issues++;
                 continue;
-            } else if ((e instanceof UnexpectedError) && e.err.code == "ECONNRESET") {
+                ECONNRESET
+            } else if ((e instanceof UnexpectedError) && e.err.code == "ESOCKETTIMEDOUT") {
                 host.isAlive = false;
                 stat.connectivity_issues++;
                 continue;
             } else if ((e instanceof UnexpectedError) && e.err.code == "ENOTFOUND") {
+                host.isAlive = false;
+                stat.connectivity_issues++;
+                continue;
+            } else if ((e instanceof UnexpectedError) && e.err.code == "ECONNRESET") {
                 host.isAlive = false;
                 stat.connectivity_issues++;
                 continue;

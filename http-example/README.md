@@ -1,17 +1,26 @@
 # Example of HTTP key-value storage based on Gryadka
 
-The system consists of 6 nodes:
+This is an example of how to build a simple HTTP key-value storage based on Gryadka and to perform reconfiguration.
 
-  * Three of them are full nodes and host two processes each, an acceptor and a proposer.
+The system consists of 7 nodes:
+
+  * Three acceptors (redis).
+  * Two proposers (with http interface).
   * A client node which hosts three coroutines continuously picking a random proposer and incrementing a random key by reading a value first and then performing compare and set.
-  * A control node with scripts for manually changing the number of acceptors from three to four without interrupting the clients
-  * A standing by acceptor node.
+  * A control node with scripts for manually changing the number of acceptors from three to four without interrupting the clients.
 
 ## How to run the cluster and change its configuration
 
-Open terminal with this project, `cd example` and `./build-run.sh` to run the full nodes and a standby acceptor.
+Open terminal with this project, `cd http-example` and `./build-run.sh` to run acceptors and proposers.
 
-Open a new terminal window, `cd example/node-clients` and `./build-run.sh` to run the three clients. You'll see the following output:
+Proposer are not configured so any operation will fail. Let's configure them to use one acceptor. Open a new terminal window, `cd http-example/node-control` and execute:
+
+```
+./run-control.sh add-accept all acceptor-1:6379 1
+./run-control.sh add-prepare all acceptor-1:6379 1
+```
+
+After this point we can start a client and then perform live reconfiguration. Open a new terminal window, `cd http-example/node-control` and `./run-client.sh` to run the three clients. You'll see the following output:
 
 ```
 # proposers: 3
@@ -33,10 +42,30 @@ The first column is the n-th second since the start. The last three columns corr
 
 The funnel structure tells about the high number of failures caused by contention since clients choose proposers randomly.
 
-Open a third window and `cd example/node-control`. Now we'll perform an extension of the cluster. Please see the CASPaxos paper and sources for the details. It makes sense to monitor client's output to make sure that there is no impact.
+Let's perform live reconfiguration and make proposer use all three acceptors. Switch to the control window and execute:
 
-1. `./build-run.sh accept` - adds the fourth acceptor to the accept list and adjusts accept quorum from 2 to 3
-2. `./build-run.sh rescan` - rereads every key.
-3. `./build-run.sh prepare` - adds the fourth acceptor to the prepare list and adjusts prepare quorum from 2 to 3
+```
+./run-control.sh add-accept all acceptor-2:6379 2
+./run-control.sh rescan acceptor-1:6379,acceptor-2:6379 2
+./run-control.sh add-prepare all acceptor-2:6379 2
+./run-control.sh add-accept all acceptor-3:6379 2
+./run-control.sh add-prepare all acceptor-3:6379 2
+```
 
-After the 3rd step, the cluster membership change is over.
+As a result we increased replication factor and resiliency. Now let's make proposers to use only one acceptor again (shrink the cluster):
+
+```
+./run-control.sh rm-accept all acceptor-3:6379 2
+./run-control.sh rm-prepare all acceptor-3:6379 2
+./run-control.sh rescan acceptor-1:6379,acceptor-2:6379 2
+./run-control.sh rm-accept all acceptor-2:6379 1
+./run-control.sh rm-prepare all acceptor-2:6379 1
+./wipe-acceptor-2.sh
+./wipe-acceptor-3.sh
+```
+
+The last two commands remove all data from acceptor-2 and acceptor-3. It's necessary if we want to reintroduce acceptor-2 and acceptor-3 back to the cluster.
+
+N.B. each command is idempotent so we can retry it until it succeds and only then move to the next command.
+
+For details on reconfiguration see the CASPaxos paper.

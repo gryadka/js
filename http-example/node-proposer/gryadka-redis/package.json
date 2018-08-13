@@ -1,0 +1,25 @@
+{
+  "name": "gryadka-redis",
+  "version": "1.61.12",
+  "description": "Implementation of Gryadka's acceptor based on Redis",
+  "main": "index.js",
+  "dependencies": {
+    "redis": "2.6.2",
+    "bluebird": "3.4.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gryadka/js.git"
+  },
+  "keywords": [
+    "gryadka",
+    "caspaxos",
+    "redis"
+  ],
+  "author": "Denis Rystsov <rystsov.denis@gmail.com> (http://rystsov.info/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gryadka/js/issues"
+  },
+  "homepage": "https://github.com/gryadka/js/blob/master/README.md"
+}

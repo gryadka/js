@@ -1,0 +1,22 @@
+{
+  "name": "gryadka-core",
+  "version": "1.61.12",
+  "description": "Gryadka is a minimalistic master-master replicated consistent key-value storage based on the CASPaxos protocol",
+  "main": "index.js",
+  "dependencies": { },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gryadka/js.git"
+  },
+  "keywords": [
+    "gryadka",
+    "caspaxos",
+    "paxos"
+  ],
+  "author": "Denis Rystsov <rystsov.denis@gmail.com> (http://rystsov.info/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gryadka/js/issues"
+  },
+  "homepage": "https://github.com/gryadka/js/blob/master/README.md"
+}
